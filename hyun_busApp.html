@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>현대제철 통근버스</title>
+  <script type="text/javascript">
+    var timer;
+    var schInterval;
+
+      function launchHBusApp(){
+
+        var launchAppUrl_a = 'autobusapp://'; // 앱 스키마 Android
+        var launchAppUrl_i = 'AutoBusAppHec://'; // 앱 스키마 iOS
+        var market_a = "https://play.google.com/store/apps/details?id=hec.app.autobus";
+        var market_i = "https://apps.apple.com/kr/app/id1314379263";
+        var download_app = "https://www.hipineapple.co.kr";
+
+        var currentOS;
+        var mobile = (/iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase()));
+
+        if (mobile) {
+          var userAgent = navigator.userAgent.toLowerCase();
+          if (userAgent.search("android") > -1)
+            currentOS = "android";
+          else if ((userAgent.search("iphone") > -1) || (userAgent.search("ipod") > -1)
+                || (userAgent.search("ipad") > -1))
+            currentOS = "ios";
+          else
+            currentOS = "otehr";
+        } else {
+          // 모바일이 아닐 때
+          currentOS = "nomobile";
+        }
+
+        if(currentOS == "android") {
+
+          location.href = launchAppUrl_a;
+          // 앱이 설치 되어있는지 체크
+          schInterval = setInterval(intervalSch, 500);
+          timer = setTimeout(function(){
+            window.location = market_a;
+            clearInterval(schInterval);
+            goHome();
+          }, 2000);
+          
+        } else if(currentOS == "ios") {
+   
+          location.href = launchAppUrl_i;
+          // 앱이 설치 되어있는지 체크
+          schInterval = setInterval(intervalSch, 500);
+          timer = setTimeout(function(){
+            window.location = market_i;
+            clearInterval(schInterval);
+          }, 2000);
+
+        } else {
+          location.href=download_app;
+        } 
+
+      }
+
+      function goHome(){
+        location.href="/m/view/main";
+      }
+        
+      function clearTimer(){
+        clearInterval(schInterval);
+        clearTimeout(timer);
+        goHome();
+      }
+
+      function intervalSch(){
+        if(document.webkitHidden || document.hidden){// 웹뷰 비활성화
+          clearTimer();// 앱이 설치되어있을 경우 타이머 제거
+        } else{ // 웹뷰 활성화
+        }
+      }
+
+      window.onload = launchHBusApp;
+  </script>
+</head>
+<body>
+
+  <img src="https://www.hipineapple.co.kr/images/contents/logo.png" style="display: block;margin-left:auto;margin-right:auto;margin-top:100px;">
+  <br><br>
+  <div style="display:block;margin-left:auto;margin-right:auto;text-align:center;">앱 설치 확인 중입니다 >></div>
+</body>
+</html>
