@@ -1,4 +1,839 @@
 
+
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link href="/resources/assets/css/font.css" type="text/css" rel="stylesheet" />
+    <link href="/resources/assets/css/reset.css" type="text/css" rel="stylesheet" />
+    <link href="/resources/assets/css/common.css" type="text/css" rel="stylesheet" />
+    <link href="/resources/assets/css/swiper.min.css" type="text/css" rel="stylesheet" />
+    <script src="/resources/assets/js/jquery.js"></script>
+    <script src="/resources/assets/js/common-web.js"></script>
+    <script src="/resources/assets/js/bridge.js"></script>
+    <script src="/resources/assets/js/swiper.min.js"></script>
+    <script src="/resources/assets/js/jnf.js"></script>
+</head>
+<script type="text/javascript">
+
+    $(window).bind("pageshow", function(event) {
+        if (event.originalEvent && event.originalEvent.persisted) {
+            if(isDeviceIOS()){
+                if(typeof iosHistoryBackAction === 'undefined'){
+                    if("/m/view/main".includes(window.location.pathname)){
+                        goPage("/m/view/main");
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    iosHistoryBackAction();
+                }
+            }
+        }
+    });
+
+    $(document).ready(function(){
+        let commonMemberInfo = $localStorage.getItem("MemberInfo");
+        let pathName = window.location.pathname + "" + window.location.search;
+      
+        if(commonMemberInfo == null || typeof commonMemberInfo === 'undefined' || commonMemberInfo === 'undefined' ) {
+        
+        	if(pathName !== '/m/view/helpNa'){
+        		
+            	doAjaxCall("/api/fms/members", "GET", "", "commonMemberInfoSetting");
+            	
+        	}
+        } else {
+            commonAuthCheck();
+        }
+    });
+
+    const nativeHeaderBackBtnEvent = function(result){
+        if(document.referrer) {
+            if(typeof goBackAction === 'undefined'){
+                if(typeof result === 'undefined'){
+                    history.back();
+                } else {
+                    if (result) {
+                        history.back();
+                    } else {
+                        location.href = "/m/view/main";
+                    }
+                }
+            } else {
+                goBackAction(result);
+            }
+        } else {
+        	let passUrl = ['/m/view/main', '/m/view/ftDetail', '/m/view/ftModify', '/m/view/ftReply'];
+            if(passUrl.includes(window.location.pathname)){
+            	if(!(window.location.pathname.indexOf('/m/view/main') > -1)){
+            		goBackAction(result);
+            	} else {
+            		goBackAction();	
+            	}
+            } else {
+                location.href="/m/view/main";
+            }
+        }
+    }
+
+    function commonMemberInfoSetting(result){
+        $localStorage.setItem("MemberInfo", JSON.stringify(result));
+        location.reload();
+    }
+
+    function commonAuthCheck(){
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+        let pathName = window.location.pathname + "" + window.location.search;
+        let servicePath = pathName.replace(/^\/m\/view\//g,"");
+        let pathSliceIndex = servicePath.indexOf("/");
+
+        if(pathSliceIndex > 0){
+            servicePath = servicePath.substr(0, pathSliceIndex);
+        }
+
+        let infoCheckParam = {
+            "memberId" : lsMemberInfo.memberId,
+            "bldgId" : lsMemberInfo.bldgId,
+            "compId" : lsMemberInfo.compId,
+            "memberTyCode" : lsMemberInfo.memberTyCode,
+            "servicePath" : servicePath,
+            "originUrl" : pathName
+        }
+
+        if(pathName !== '/m/view/main' && pathName !== '/m/view/ftReply'&& pathName !== '/m/view/helpNa') {
+            doAjaxCall("/api/page/auth/check", "GET", infoCheckParam, "completePageAuthCheck");
+        }
+    }
+
+    function bldgFloorSpaceNotUse(){
+        showWorkspaceSetting();
+    }
+
+    function completePageAuthCheck(result){
+        let pageAuthInfo = result;
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+        let isServiceAuth = pageAuthInfo.isServiceAuth;
+
+        if(pageAuthInfo.bldgUseYn === 'N' || pageAuthInfo.floorUseYn === 'N' || pageAuthInfo.spceUseYn === 'N'){
+            let message = '선택하신 건물이나 층, 공간이 서비스 중지되었습니다.<br>내정보에서 근무위치를 변경하여 주세요.';
+            commonPopupOpen("globalCommonPopupType3", "", message, "bldgFloorSpaceNotUse()", "");
+        }
+
+        if(isServiceAuth === 'N'){
+            commonPopupOpen("globalCommonPopupType3", "", "서비스 이용 권한이 없습니다.<br>관리자에게 문의해 주세요.", "adminAuthBackPage()", "");
+        }
+
+        if(typeof pageAuthInfo !== 'undefined') {
+            if (pageAuthInfo.compApprovReqYn === 'Y' && lsMemberInfo.comcertYn === 'N') {
+                commonPopupOpen("globalCommonPopupType3", "", "회사인증이 필요한 서비스 입니다.<br/>안내에 따라 회사 인증을 진행해 주세요.", "CompanyAuthGoPage()", "");
+            }
+        }
+    }
+
+    function CompanyAuthGoPage(){
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+        if(isMobile()) {
+            goCompanyAuth(lsMemberInfo.memberId, lsMemberInfo.compId);
+            commonPopupClose();
+            history.back();
+        } else {
+            window.close();
+        }
+    }
+
+    function adminAuthBackPage(){
+        if(isMobile()) {
+            goPage("/m/view/main");
+        } else {
+            window.close();
+        }
+    }
+    
+	var def1HY= "";
+	var def2HY= "";
+	var def3HY= "";
+	//var def4HY= "";
+	var def5HY= "";
+	var def1ES= "";
+	let lsMemberInfos = JSON.parse($localStorage.getItem("MemberInfo"));
+	if(lsMemberInfos.bldgId == "TG_0008066"){
+		def1HY = "안전신고<br>개선제안";
+		def2HY = "원스톱지원센터<br>핫라인";
+		def3HY = "도서<br>대여하기";
+	//	def4HY = "공간/주차예약 <br> 신청하기";
+		def5HY = "페이코";
+	}
+	else if(lsMemberInfos.bldgId == "TG_0009537"){
+		def1HY = "위험신고<br>개선제안";
+		def2HY = "원스톱지원센터<br>핫라인"; 
+		def3HY = "물품<br>대여하기";
+		def5HY = "오늘 뭐 먹지?";
+	} 
+	else if(lsMemberInfos.bldgId == "TG_0008053" || lsMemberInfos.bldgId == "TG_0008936"){
+		def1HY = "위험신고<br>개선제안";
+		def2HY = "콜센터<br>연결";
+		def3HY = "물품<br>대여하기";
+		def5HY = "페이코";
+	}
+	else {
+			def1HY = "위험신고<br>개선제안";
+			def5HY = "페이코";
+			def2HY = "긴급신고";
+			def3HY = "물품<br>대여하기";
+		//	def4HY = "공간예약<br>신청하기"
+	}
+	
+	if(lsMemberInfos.bldgId == "TG_0008053" || lsMemberInfos.bldgId == "TG_0008936"){
+		def1ES= "기타신고";
+	}else {
+		def1ES= "기타문의";
+	}
+	
+	
+	//alert(lsMemberInfos.bldgGroupId);
+    const menuKeyMap = {
+    	
+        "SVC_ID_0043" : {
+            "class" : "list01",
+            "menuNm" : "담당자 승인"
+        },
+        "SVC_ID_0025" : {
+            "class" : "list02",
+            "menuNm" : "더워요<br>추워요"
+        },
+        "SVC_ID_0023" : {
+            "class" : "list03",
+            "menuNm" : "불편해요<br>도와주세요"
+        },
+        "SVC_ID_0013" : {
+            "class" : "list04",
+            "menuNm" : "문이<br>고장났어요"
+        },
+        "SVC_ID_0008" : {
+            "class" : "list05",
+            "menuNm" : "더러워요<br>치워주세요"
+        },
+        "SVC_ID_0052" : {
+            "class" : "list34",
+            "menuNm" : "벌레<br>잡아주세요"
+        },
+        "SVC_ID_0053" : {
+            "class" : "list35",
+            "menuNm" : "청소서비스<br>불만있어요"
+        },
+        "SVC_ID_0054" : {
+            "class" : "list36",//기타문의
+            "menuNm" : def1ES
+        },
+        "SVC_ID_0055" : {
+            "class" : "list37",
+            "menuNm" : "GS<br>연등신청"
+        },
+        "SVC_ID_0059" : {
+            "class" : "list38",
+            "menuNm" : def1HY
+        },
+        "SVC_ID_0056" : {
+            "class" : "list17",
+            "menuNm" : "GS<br>방문예약"
+        },
+        "SVC_ID_0014" : {
+            "class" : "list06",
+            "menuNm" : "전기가<br>안 들어와요"
+        },
+        "SVC_ID_0016" : {
+            "class" : "list07",
+            "menuNm" : "변기가<br>막혔어요"
+        },
+        "SVC_ID_0017" : {
+            "class" : "list08",
+            "menuNm" : "조명이<br>이상해요"
+        },
+        "SVC_ID_0027" : {
+            "class" : "list09",
+            "menuNm" : "택배<br>신청하기"
+        },
+        "SVC_ID_0028" : {
+            "class" : "list10",
+            "menuNm" : "퀵<br>신청하기"
+        },
+        "SVC_ID_0032" : {
+            "class" : "list11",
+            "menuNm" : "공간예약<br>신청하기" // 공간예약 신청하기
+        },
+        "SVC_ID_0033" : {
+            "class" : "list12",
+            "menuNm" : "우산<br>대여하기"
+        },
+        "SVC_ID_0015" : {
+            "class" : "list13",
+            "menuNm" : "세면대가<br>막혔어요"
+        },
+        "SVC_ID_0018" : {
+            "class" : "list23",
+            "menuNm" : "이상한<br>소리가 나요"
+        },
+        "SVC_ID_0019" : {
+            "class" : "list22",
+            "menuNm" : "바닥이<br>불편해요"
+        },
+        "SVC_ID_0031" : {
+            "class" : "list16",
+            "menuNm" : "세탁<br>서비스안내"
+        },
+        "SVC_ID_0030" : {
+            "class" : "list24",
+            "menuNm" : "퀵<br>서비스안내"
+        },
+        "SVC_ID_0029" : {
+            "class" : "list15",
+            "menuNm" : "케이터링<br>신청하기"
+        },
+        "SVC_ID_0035" : {
+            "class" : "list32",
+            "menuNm" : def3HY //물품대여
+        },
+        "SVC_ID_0037" : {
+            "class" : "list17",
+            "menuNm" : "LG<br>방문예약"
+        },
+        "SVC_ID_0038" : {
+            "class" : "list18",
+            "menuNm" : "엣스퍼트<br>통근버스"
+        },
+        "SVC_ID_0039" : {
+            "class" : "list19",
+            "menuNm" : "주차하기"
+        },
+        "SVC_ID_0009" : {
+            "class" : "list57",
+            "menuNm" : "통근버스<br>민원"
+        },
+        "SVC_ID_0060" : {
+            "class" : "list41",
+            "menuNm" : def5HY
+        },
+        "SVC_ID_0061" : {
+            "class" : "list42",
+            "menuNm" : "도레미프레시"
+        },
+        "SVC_ID_0062" : {
+            "class" : "list43",
+            "menuNm" : "우편&택배<br>신청하기"
+        },
+        "SVC_ID_0040" : {
+            "class" : "list20",
+            "menuNm" : "주문하기"
+        },
+        "SVC_ID_0048" : {
+            "class" : "list28",
+            "menuNm" : "엣스퍼트<br>통근민원"
+        },
+        "SVC_ID_0049" : {
+            "class" : "list30",
+            "menuNm" : "에어컨이<br>고장났어요"
+        },
+        "SVC_ID_0050" : {
+            "class" : "list31",      
+            "menuNm" : def2HY
+        },
+        "SVC_ID_0051" : {
+            "class" : "list33",
+            "menuNm" : "의무실상담"
+        },
+        "SVC_ID_0024" : {
+            "class" : "list01 admin",
+            "menuNm" : "불편신고<br>관리"
+        },
+        "SVC_ID_0064" : { 
+            "class" : "list44",
+            "menuNm" : "파인마켓"
+        },
+        "SVC_ID_0065" : { 
+            "class" : "list45",
+            "menuNm" : "공기질<br>어때?"
+        },
+        "SVC_ID_0026" : {
+            "class" : "list02 admin",
+            "menuNm" : "더워요추워요<br>관리"
+        },
+        "SVC_ID_0005" : {
+            "class" : "list03 admin",
+            "menuNm" : "화장실<br>모니터링"
+        },
+        "SVC_ID_0004" : {
+            "class" : "list04 admin",
+            "menuNm" : "공기질<br>모니터링"
+        },
+        "SVC_ID_0034" : {
+            "class" : "list05 admin",
+            "menuNm" : "우산 대여<br>관리"
+        },
+        "SVC_ID_0036" : {
+            "class" : "list11 admin",
+            "menuNm" : "물품 대여<br>관리"
+        },
+        "SVC_ID_0042" : {
+            "class" : "list07 admin",
+            "adminClass" : "adminList07",
+            "menuNm" : "비상대피<br>관리"
+        },
+        "SVC_ID_0010" : {
+            "class" : "list02",
+            "menuNm" : "더워요<br>추워요"
+        },
+        
+        "SVC_ID_0066" : {
+            "class" : "list46",
+            "menuNm" : "전화기<br>도움필요해요"
+        },
+        "SVC_ID_0067" : {
+            "class" : "list47",
+            "menuNm" : "물품유지보수<br>신청하기"
+        },
+        "SVC_ID_0068" : {
+            "class" : "list48",
+            "menuNm" : "임원휴대폰<br>신청하기"
+        },
+        "SVC_ID_0069" : {
+            "class" : "list49",
+            "menuNm" : "키오스크&웰컴보드<br>신청하기"
+        },
+        "SVC_ID_0070" : {
+            "class" : "list50",
+            "menuNm" : "주재원<br>신청안내"
+        },  
+        "SVC_ID_0071" : {
+            "class" : "list51",
+            "menuNm" : "심리상담<br>바로가기"
+        },
+        "SVC_ID_0072" : { 
+            "class" : "list52",
+            "menuNm" : "사무용품<br>신청하기 "
+        },
+        "SVC_ID_0073" : { 
+            "class" : "list53",
+            "menuNm" : "현대제철<br>CJ식당바로가기 "
+        },
+        "SVC_ID_0074" : { 
+            "class" : "list54",
+            "menuNm" : "현대제철<br>모바일좌석 "
+        },
+        "SVC_ID_0075" : { 
+            "class" : "list55",
+            "menuNm" : "식권대장"
+        },
+        "SVC_ID_0076" : { 
+            "class" : "list56",
+            "menuNm" : "현대제철<br>경영지원포탈"
+        },
+        "SVC_ID_0077" : {
+            "class" : "list58",
+            "menuNm" : "간식<br>서비스"
+        },
+        "SVC_ID_0078" : {
+            "class" : "list59",
+            "menuNm" : "방문세차<br>신청하기"
+        },
+         "SVC_ID_0079" : { 
+            "class" : "list60",
+            "menuNm" : "주차신청"
+        },
+        "SVC_ID_0080" : {
+            "class" : "list61",
+            "menuNm" : "해외출장<br>안내"
+        },  
+        "SVC_ID_0081" : { 
+            "class" : "list62",
+            "menuNm" : "현대제철<br>셔틀버스"
+        },
+        "SVC_ID_0082" : {
+            "class" : "list63",
+            "menuNm" : "휴플러스"
+        },
+        "SVC_ADD_MENU" : {
+            "class" : "list21",
+            "menuNm" : "더보기"
+        }
+    }
+
+    const commonPopupOpen = function(id, title, subTitle, confirmCallback, cancelCallback){
+        let obj = $("#"+id);
+
+        subTitle = subTitle.replace(/\n/g, "<br/>");
+
+        obj.find(".pop_contents > p").html(subTitle);
+        obj.find(".btn_group > ul > li > .solid_gray").attr("onclick", (confirmCallback === '' || typeof confirmCallback === 'undefined') ? "commonPopupClose()" : confirmCallback,);
+
+        if("globalCommonPopupType1" === id || "globalCommonPopupType3" === id){
+            obj.find(".pop_contents > h4").html(title);
+        } else if("globalCommonPopupType4" === id || "globalCommonPopupType6" === id ){
+            obj.find(".pop_contents > h4").html(title);
+            obj.find(".btn_group > ul > li > .line_gray").attr("onclick", (cancelCallback === '' || typeof cancelCallback === 'undefined') ? "commonPopupClose()" : cancelCallback);
+        } else if("globalCommonPopupType5" === id){
+            obj.find(".btn_group > ul > li > .line_gray").attr("onclick", (cancelCallback === '' || typeof cancelCallback === 'undefined') ? "commonPopupClose()" : cancelCallback);
+        } else if("globalCommonPopupType7" === id){
+            obj.find(".pop_contents").html(subTitle);
+        } else if("globalCommonPopupType8" === id){
+            obj.find(".pop_contents").html(subTitle);
+            obj.find(".btn_group > ul > li > .solid_gray").html(title);
+            obj.find(".btn_group > ul > li > .solid_gray").attr("onclick", (confirmCallback === '' || typeof confirmCallback === 'undefined') ? "commonPopupClose()" : confirmCallback);
+        } else if("globalCommonPopupType9" === id){
+            obj.find(".btn_group > ul > li > .line_gray").attr("onclick", (cancelCallback === '' || typeof cancelCallback === 'undefined') ? "commonPopupClose()" : cancelCallback);
+        }
+
+        obj.show();
+        $("#globalDimmDiv").show();
+        showHideDim("Y");
+        $("body").css("overflow", "hidden");
+    }
+
+    const commonPopupClose = function(){
+        $("div[id^=globalCommonPopupType]").hide();
+        showHideDim("N");
+        $("#globalDimmDiv").hide();
+        $('body').css("overflow", "visible");
+
+        let obj = $("div[id^=globalCommonPopupType]");
+        $.each(obj, function(index, row){
+            let id = $(row).attr("id");
+
+            $(row).find(".pop_contents > p").html("");
+            $(row).find(".btn_group > ul > li > .solid_gray").removeAttr("onclick");
+
+            if("globalCommonPopupType1" === id || "globalCommonPopupType3" === id){
+                $(row).find(".pop_contents > h4").html("");
+            } else if("globalCommonPopupType4" === id || "globalCommonPopupType6" === id ){
+                $(row).find(".pop_contents > h4").html("");
+                $(row).find(".btn_group > ul > li > .line_gray").removeAttr("onclick");
+            } else if("globalCommonPopupType5" === id){
+                $(row).find(".btn_group > ul > li > .line_gray").removeAttr("onclick");
+            } else if("globalCommonPopupType7" === id){
+                $(row).find(".pop_contents").html("");
+            } else if("globalCommonPopupType8" === id){
+                $(row).find(".pop_contents").html("");
+                $(row).find(".btn_group > ul > li > .solid_gray").html("");
+                $(row).find(".btn_group > ul > li > .solid_gray").removeAttr("onclick");
+            } else if("globalCommonPopupType9" === id){
+                $(row).find(".btn_group > ul > li > .line_gray").removeAttr("onclick");
+            } 
+        });
+    }
+
+	
+</script>
+<!DOCTYPE html>
+<html lang="ko">
+<body >
+<!-- 팝업 : 제목 있음 / 버튼 1개 -->
+<div class="popup" id="globalCommonPopupType1" style="display: none;">
+    <div class="pop_contents">
+        <h4></h4>
+        <p class="small"></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 팝업 : 제목 없음 / 버튼 1개 -->
+<div class="popup" id="globalCommonPopupType2" style="display: none;">
+    <div class="pop_contents">
+        <p></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 팝업 : 아이콘 있음 / 제목 없음 / 버튼 1개 -->
+<div class="popup" id="globalCommonPopupType3" style="display: none;">
+    <div class="pop_contents">
+        <i class="pop_icon alert"></i>
+        <p></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 팝업 : 제목 있음 / 버튼 2개 -->
+<div class="popup" id="globalCommonPopupType4" style="display: none;">
+    <div class="pop_contents">
+        <h4></h4>
+        <p class="small"></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn line_gray">취소</button></li>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 팝업 : 제목 없음 / 버튼 2개 -->
+<div class="popup" id="globalCommonPopupType5" style="display: none;">
+    <div class="pop_contents">
+        <p></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn line_gray">취소</button></li>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 팝업 : 아이콘 있음 / 제목 없음 / 버튼 2개 -->
+<div class="popup" id="globalCommonPopupType6" style="display: none;">
+    <div class="pop_contents">
+        <i class="pop_icon alert"></i>
+        <p></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn line_gray">취소</button></li>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<div class="popup" id="globalCommonPopupType7" style="display: none;">
+    <div class="pop_contents">
+
+    </div>
+</div>
+
+<!-- 팝업 : 아이콘 있음 / 제목 없음 / 버튼 2개 -->
+<div class="popup" id="globalCommonPopupType8" style="display: none;">
+    <div class="pop_contents">
+
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn solid_gray"></button></li>
+        </ul>
+    </div>
+</div>
+
+
+<!-- 팝업 : 아이콘 있음 / 제목 없음 / 버튼 2개 -->
+<div class="popup" id="globalCommonPopupType9" style="display: none;">
+    <div class="pop_contents">
+        <i class="pop_icon alert"></i>
+        <p>
+      
+        </p>
+          비공개 여부<input id="anomin" type ="checkbox" name="anomin"   />
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn line_gray">취소</button></li>
+            <li><button type="button" class="btn solid_gray">저장</button></li>           
+        </ul> 
+    </div>
+</div>
+
+<div class="dimm" id="globalDimmDiv" style="display: none;"></div>
+</body>
+</html>
+
+<div id="pcHeader" class="mHeader" style="display:none">
+    <button type="button" id="hBack" onclick="javascript:history.back()" class="back">뒤로</button>
+    <h1 id="hTitle"></h1>
+    <button type="button" id="hRefresh" onclick="javascript:location.reload()" class="refresh">새로고침</button>
+    <button type="button" id="hClose" onclick="javascript:nativeHeaderCloseBtnEvent()" class="close">닫기</button>
+</div>
+<div id="pcHspace" style="padding:25px;display:none"></div>
+
+<script type="text/javascript">
+var loading = false;    //중복실행여부 확인 변수
+var totCnt = 0; //전체 데이타 건수
+var rowCnt = 10; //조회건수
+var page = 1;   //불러올 페이지
+var searchNm;
+
+$(document).ready(function() {	
+	if(isMobile()){
+		rowCnt = 10;
+	}else{
+		rowCnt = 20;
+	}
+	$('#bldgSrhBtn').attr('disabled', true);
+	$('#btnBldgConfirm').attr('disabled', true);
+	
+	
+	//건물정보 검색 버튼 이벤트
+	$(document).on('click', '#bldgSrhBtn', function(){
+		
+		searchNm = $('#sbldgNm').val();
+		page = 1;
+		doAjaxCall("/api-no/common/buildingList",
+			"GET",
+			{'bldgGroupId':bldgGroupId,
+			'searchNm':searchNm,
+  			'startIndex' : 1,
+  			'endIndex' : rowCnt,
+  			'pageingUseAt' : true
+  			}, "dobldgGroupListCallBack");
+	});
+	
+	// 초기화
+	$(document).on('click', '#initBtn', function(){
+		$(this).siblings().val('');
+		$('#bldgSrhBtn').attr('disabled', true);
+		$('#btnBldgConfirm').attr('disabled', true);
+		setNativeFooterBg('BTN_D');
+		$('#bldgLst').empty();
+		$('#bldgNoLst').show();
+		page = 1;
+	});
+	
+	$(document).on('keyup', '#sbldgNm', function(){
+		
+		var val = $(this).val();
+		if (val.length > 50) {
+			$(this).val(val.substring(0, 50));
+		}
+		if(val.length >= 1) {
+			$('#bldgSrhBtn').attr('disabled', false);
+		}else{
+			$('#bldgSrhBtn').attr('disabled', true);
+		}	
+	});
+	
+	$(document).on('click', 'input:radio[name="radioNm"]', function(){
+		$('#btnBldgConfirm').attr('disabled', false);
+		setNativeFooterBg('BTN_E');
+	});
+	
+	$(document).on('click', '#btnBldgConfirm', function(){
+		var idx = $('input:radio[name="radioNm"]:checked').val();
+		var sBldgId = $('#bldgId_'+idx).val();
+		var sBldgNm = $('#bldgNm_'+idx).val();
+		setNativeFooterBg('DEFAULT');
+		popSrchOk(sBldgId, sBldgNm);		
+	});
+	
+   	$(window).scroll(function(){
+		let clientHeight = document.body.clientHeight,
+    	windowHeight = $(this).outerHeight(),
+    	scrollY = Math.floor($(this).scrollTop());
+		if( windowHeight - clientHeight <= scrollY+5 ){
+			//alert('scrollTop::'+scrollTop+'\n windowHeight'+windowHeight +'\n documentHeight:'+documentHeight);
+			if(!loading){
+                loading = true; //실행 불가능 상태로 변경
+                pBldgNextload(); 
+            }
+		}
+	})
+});
+
+function getBldgList(){
+	//건물정보 불러오기
+	let params = {
+			"bldgGroupId" : memberInfo.bldgGroupId
+	}
+	doAjaxCall("/api-no/common/buildings", "GET", params, "bldgListCallBack");
+}
+
+function bldgListCallBack(result){
+	
+	let obj = result.bldgList;
+	var bldgListHtml ='';
+	if(obj.length > 0){
+		$.each(obj, function(index, row){
+			bldgListHtml += '<li>';
+			bldgListHtml += '<input type="radio" name="radioNm" id="rad'+index+'" value="'+index+'"/><label for="rad'+index+'">'+ row.bldgNm +'</label></li>';
+			bldgListHtml += '<input type="hidden" id="bldgId_'+index+'" value="'+row.bldgId+'"/>';
+			bldgListHtml += '<input type="hidden" id="bldgNm_'+index+'" value="'+row.bldgNm+'"/>';
+			bldgListHtml += '</li>';
+    	});
+    	$('#bldgLst').html(bldgListHtml);
+    	$('#bldgNoLst').hide();
+	}
+		
+	
+	
+}
+function pBldgNextload(){
+	let startIndex = ((page-1)*rowCnt)+1;
+   	let params = {
+   			'bldgGroupId':bldgGroupId,
+			'searchNm':searchNm,
+			'startIndex' : startIndex,
+  			'endIndex' : startIndex+9,
+  			'pageingUseAt' : true
+  	}		    
+    if(startIndex<totCnt){
+    	//alert(JSON.stringify(params));
+    	doAjaxCall("/api-no/common/buildingList", "GET", params, "dobldgGroupListCallBack");	
+    }
+}
+
+//빌딩 목록 검색결과
+function dobldgGroupListCallBack(result){
+	let obj = result.bldgList;
+	totCnt = result.bldgListCount;
+	$('#btnBldgConfirm').attr('disabled', true);
+	setNativeFooterBg('BTN_D');
+	let bldgListHtml = '';
+	if(page==1){
+		$('#bldgLst').empty();
+	}
+	if(obj.length > 0){
+		page++; //페이지 증가
+		$('#bldgNoLst').hide();
+		$.each(obj, function(index, row){
+			bldgListHtml += '<li>';
+			bldgListHtml += '<input type="radio" name="radioNm" id="rad'+index+'" value="'+index+'"/><label for="rad'+index+'">'+ row.bldgNm +'</label></li>';
+			bldgListHtml += '<input type="hidden" id="bldgId_'+index+'" value="'+row.bldgId+'"/>';
+			bldgListHtml += '<input type="hidden" id="bldgNm_'+index+'" value="'+row.bldgNm+'"/>';
+			bldgListHtml += '</li>';
+    	});
+    	$('#bldgLst').append(bldgListHtml);
+	} else {
+		if(page==1){
+			$('#bldgNoLst').show();
+		}
+	}
+}
+
+</script>
+	<div id="bldgLstDiv" style="display: none;">
+		<div class="section">
+			<div class="search_area clear">
+				<div class="search_input">
+					<div class="input_wrap" style="width: 100%;">
+						<input type="text" id="sbldgNm" placeholder="건물명을 입력하세요." />
+						<button type="button" id="initBtn" class="input_del">초기화</button>
+					</div>
+				</div>
+				<button type="button" id="bldgSrhBtn" class="btn normal">검색</button>
+			</div>
+		</div>
+		<div class="section">
+			<ul class="search_result_radio" id="bldgLst">				
+			</ul>
+			<!-- 검색 결과가 없는 경우 -->
+			<div class="search_result_none" id="bldgNoLst">검색 결과가 없습니다.</div>
+			<!-- // 검색 결과가 없는 경우 -->
+		</div>
+		
+		<div class="btn_bottom_sticky">
+			<div class="btn_group">
+				<button type="button" id="btnBldgConfirm" class="btn green">선택완료</button>
+			</div>
+		</div>
+	</div>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -17,10 +852,8 @@ const lifeCheck = function(){
         //let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
         let url = "http://hue.oneulbamn.com";
         
-        window.open(url, '_blank');
-
-    }
-
+        window.open(url,'_blank');
+}
      
 </script>
 
