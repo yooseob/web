@@ -12,7 +12,7 @@
          "c_update_act":"새로운 버전이 출시되었습니다.\n업데이트 후 이용해 주시기 바랍니다.",
          "c_appstore_url":"https://play.google.com/store/apps/details?id=com.webcash.avatar",
          "c_session_time":"600",
-         "c_available_service":false,
+         "c_available_service":true,
          "c_available_act":"안녕하세요.\n앱을 이용해주시는 여러분께 감사드리며, 더 나은 서비스를 제공하기 위해 시스템 점검을 진행하고 있습니다.",
          "c_program_ver":"1.0.0",
          "c_site_url":"https://www.hipineapple.co.kr",
