@@ -10,20 +10,20 @@
          },
          "google_host":"speech.googleapis.com",
          "c_update_act":"새로운 버전이 출시되었습니다.\n업데이트 후 이용해 주시기 바랍니다.",
-         "c_appstore_url":"https:\/\/play.google.com\/store\/apps\/details?id=com.webcash.avatar",
+         "c_appstore_url":"https://play.google.com/store/apps/details?id=com.webcash.avatar",
          "c_session_time":"600",
          "c_available_service":true,
-         "c_available_act":"안녕하세요.\n아바타 앱을 이용해주시는 여러분께 감사드리며, 더 나은 서비스를 제공하기 위해 시스템 점검을 진행하고 있습니다.",
+         "c_available_act":"안녕하세요.\n앱을 이용해주시는 여러분께 감사드리며, 더 나은 서비스를 제공하기 위해 시스템 점검을 진행하고 있습니다.",
          "c_program_ver":"1.0.0",
-         "c_site_url":"https:\/\/app.askavatar.ai",
+         "c_site_url":"https://www.hipineapple.co.kr",
          "c_register_pass":false,
-         "c_notice_yn":false,
+         "c_notice_yn":true,
          "c_web_url":{
-            "data_main_url":"\/basic_0002_01.act",
-            "tts_main_url":"\/basic_0001_01.act",
-            "login_url":"\/login_0001_01.act",
-            "sign_up_url":"\/join_0001_01.act",
-            "ques_main_url":"\/ques_0001_01.act"
+            "data_main_url":"/basic_0002_01.act",
+            "tts_main_url":"/basic_0001_01.act",
+            "login_url":"/login_0001_01.act",
+            "sign_up_url":"/join_0001_01.act",
+            "ques_main_url":"/ques_0001_01.act"
          },
          "google_hint_url":"http:\/\/3.36.201.40:8080\/istn\/jsonDownload\/hint"
       }
