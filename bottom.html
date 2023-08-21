@@ -1,0 +1,27 @@
+<html>
+<head>
+
+  <link rel="stylesheet" href="/path/to/downupPopup.css" />
+  <script src="/path/to/cdn/jquery.min.js"></script>
+  <script src="/path/to/downupPopup.js"></script>
+  $(document).ready(function(){
+    $('#myPopup').downupPopup('open');
+  });
+
+  $("#myPopup").downupPopup({
+
+    duration: "300",
+    animation: "ease"
+  
+  });
+</head>
+  <body>
+    
+    <div id="myPopup">
+      <div class="downupPopup-content">
+        ... drawer content here ...
+      </div>
+    </div>
+
+  </body>  
+</html>
