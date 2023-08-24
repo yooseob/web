@@ -1,0 +1,1410 @@
+
+
+
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link href="/resources/assets/css/font.css" type="text/css" rel="stylesheet" />
+    <link href="/resources/assets/css/reset.css" type="text/css" rel="stylesheet" />
+    <link href="/resources/assets/css/common.css" type="text/css" rel="stylesheet" />
+    <link href="/resources/assets/css/swiper.min.css" type="text/css" rel="stylesheet" />
+    <script src="/resources/assets/js/jquery.js"></script>
+    <script src="/resources/assets/js/common-web.js"></script>
+    <script src="/resources/assets/js/bridge.js"></script>
+    <script src="/resources/assets/js/swiper.min.js"></script>
+    <script src="/resources/assets/js/jnf.js"></script>
+</head>
+<script type="text/javascript">
+
+    $(window).bind("pageshow", function(event) {
+        if (event.originalEvent && event.originalEvent.persisted) {
+            if(isDeviceIOS()){
+                if(typeof iosHistoryBackAction === 'undefined'){
+                    if("/m/view/main".includes(window.location.pathname)){
+                        goPage("/m/view/main");
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    iosHistoryBackAction();
+                }
+            }
+        }
+    });
+
+    $(document).ready(function(){
+        let commonMemberInfo = $localStorage.getItem("MemberInfo");
+        let pathName = window.location.pathname + "" + window.location.search;
+      
+        if(commonMemberInfo == null || typeof commonMemberInfo === 'undefined' || commonMemberInfo === 'undefined' ) {
+        
+        	if(pathName !== '/m/view/helpNa'){
+        		
+            	doAjaxCall("/api/fms/members", "GET", "", "commonMemberInfoSetting");
+            	
+        	}
+        } else {
+            commonAuthCheck();
+        }
+    });
+
+    const nativeHeaderBackBtnEvent = function(result){
+        if(document.referrer) {
+            if(typeof goBackAction === 'undefined'){
+                if(typeof result === 'undefined'){
+                    history.back();
+                } else {
+                    if (result) {
+                        history.back();
+                    } else {
+                        location.href = "/m/view/main";
+                    }
+                }
+            } else {
+                goBackAction(result);
+            }
+        } else {
+        	let passUrl = ['/m/view/main', '/m/view/ftDetail', '/m/view/ftModify', '/m/view/ftReply'];
+            if(passUrl.includes(window.location.pathname)){
+            	if(!(window.location.pathname.indexOf('/m/view/main') > -1)){
+            		goBackAction(result);
+            	} else {
+            		goBackAction();	
+            	}
+            } else {
+                location.href="/m/view/main";
+            }
+        }
+    }
+
+    function commonMemberInfoSetting(result){
+        $localStorage.setItem("MemberInfo", JSON.stringify(result));
+        location.reload();
+    }
+
+    function commonAuthCheck(){
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+        let pathName = window.location.pathname + "" + window.location.search;
+        let servicePath = pathName.replace(/^\/m\/view\//g,"");
+        let pathSliceIndex = servicePath.indexOf("/");
+
+        if(pathSliceIndex > 0){
+            servicePath = servicePath.substr(0, pathSliceIndex);
+        }
+
+        let infoCheckParam = {
+            "memberId" : lsMemberInfo.memberId,
+            "bldgId" : lsMemberInfo.bldgId,
+            "compId" : lsMemberInfo.compId,
+            "memberTyCode" : lsMemberInfo.memberTyCode,
+            "servicePath" : servicePath,
+            "originUrl" : pathName
+        }
+
+        if(pathName !== '/m/view/main' && pathName !== '/m/view/ftReply'&& pathName !== '/m/view/helpNa') {
+            doAjaxCall("/api/page/auth/check", "GET", infoCheckParam, "completePageAuthCheck");
+        }
+    }
+
+    function bldgFloorSpaceNotUse(){
+        showWorkspaceSetting();
+    }
+
+    function completePageAuthCheck(result){
+        let pageAuthInfo = result;
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+        let isServiceAuth = pageAuthInfo.isServiceAuth;
+
+        if(pageAuthInfo.bldgUseYn === 'N' || pageAuthInfo.floorUseYn === 'N' || pageAuthInfo.spceUseYn === 'N'){
+            let message = '선택하신 건물이나 층, 공간이 서비스 중지되었습니다.<br>내정보에서 근무위치를 변경하여 주세요.';
+            commonPopupOpen("globalCommonPopupType3", "", message, "bldgFloorSpaceNotUse()", "");
+        }
+
+        if(isServiceAuth === 'N'){
+            commonPopupOpen("globalCommonPopupType3", "", "서비스 이용 권한이 없습니다.<br>관리자에게 문의해 주세요.", "adminAuthBackPage()", "");
+        }
+
+        if(typeof pageAuthInfo !== 'undefined') {
+            if (pageAuthInfo.compApprovReqYn === 'Y' && lsMemberInfo.comcertYn === 'N') {
+                commonPopupOpen("globalCommonPopupType3", "", "회사인증이 필요한 서비스 입니다.<br/>안내에 따라 회사 인증을 진행해 주세요.", "CompanyAuthGoPage()", "");
+            }
+        }
+    }
+
+    function CompanyAuthGoPage(){
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+        if(isMobile()) {
+            goCompanyAuth(lsMemberInfo.memberId, lsMemberInfo.compId);
+            commonPopupClose();
+            history.back();
+        } else {
+            window.close();
+        }
+    }
+
+    function adminAuthBackPage(){
+        if(isMobile()) {
+            goPage("/m/view/main");
+        } else {
+            window.close();
+        }
+    }
+    
+	var def1HY= "";
+	var def2HY= "";
+	var def3HY= "";
+	//var def4HY= "";
+	var def5HY= "";
+	var def1ES= "";
+	let lsMemberInfos = JSON.parse($localStorage.getItem("MemberInfo"));
+	if(lsMemberInfos.bldgId == "TG_0008066"){
+		def1HY = "안전신고<br>개선제안";
+		def2HY = "원스톱지원센터<br>핫라인";
+		def3HY = "도서<br>대여하기";
+	//	def4HY = "공간/주차예약 <br> 신청하기";
+		def5HY = "페이코";
+	}
+	else if(lsMemberInfos.bldgId == "TG_0009537"){
+		def1HY = "위험신고<br>개선제안";
+		def2HY = "원스톱지원센터<br>핫라인"; 
+		def3HY = "물품<br>대여하기";
+		def5HY = "오늘 뭐 먹지?";
+	} 
+	else if(lsMemberInfos.bldgId == "TG_0008053" || lsMemberInfos.bldgId == "TG_0008936"){
+		def1HY = "위험신고<br>개선제안";
+		def2HY = "콜센터<br>연결";
+		def3HY = "물품<br>대여하기";
+		def5HY = "페이코";
+	}
+	else {
+			def1HY = "위험신고<br>개선제안";
+			def5HY = "페이코";
+			def2HY = "긴급신고";
+			def3HY = "물품<br>대여하기";
+		//	def4HY = "공간예약<br>신청하기"
+	}
+	
+	if(lsMemberInfos.bldgId == "TG_0008053" || lsMemberInfos.bldgId == "TG_0008936"){
+		def1ES= "기타신고";
+	}else {
+		def1ES= "기타문의";
+	}
+	
+	
+	//alert(lsMemberInfos.bldgGroupId);
+    const menuKeyMap = {
+    	
+        "SVC_ID_0043" : {
+            "class" : "list01",
+            "menuNm" : "담당자 승인"
+        },
+        "SVC_ID_0025" : {
+            "class" : "list02",
+            "menuNm" : "더워요<br>추워요"
+        },
+        "SVC_ID_0023" : {
+            "class" : "list03",
+            "menuNm" : "불편해요<br>도와주세요"
+        },
+        "SVC_ID_0013" : {
+            "class" : "list04",
+            "menuNm" : "문이<br>고장났어요"
+        },
+        "SVC_ID_0008" : {
+            "class" : "list05",
+            "menuNm" : "더러워요<br>치워주세요"
+        },
+        "SVC_ID_0052" : {
+            "class" : "list34",
+            "menuNm" : "벌레<br>잡아주세요"
+        },
+        "SVC_ID_0053" : {
+            "class" : "list35",
+            "menuNm" : "청소서비스<br>불만있어요"
+        },
+        "SVC_ID_0054" : {
+            "class" : "list36",//기타문의
+            "menuNm" : def1ES
+        },
+        "SVC_ID_0055" : {
+            "class" : "list37",
+            "menuNm" : "GS<br>연등신청"
+        },
+        "SVC_ID_0059" : {
+            "class" : "list38",
+            "menuNm" : def1HY
+        },
+        "SVC_ID_0056" : {
+            "class" : "list17",
+            "menuNm" : "GS<br>방문예약"
+        },
+        "SVC_ID_0014" : {
+            "class" : "list06",
+            "menuNm" : "전기가<br>안 들어와요"
+        },
+        "SVC_ID_0016" : {
+            "class" : "list07",
+            "menuNm" : "변기가<br>막혔어요"
+        },
+        "SVC_ID_0017" : {
+            "class" : "list08",
+            "menuNm" : "조명이<br>이상해요"
+        },
+        "SVC_ID_0027" : {
+            "class" : "list09",
+            "menuNm" : "택배<br>신청하기"
+        },
+        "SVC_ID_0028" : {
+            "class" : "list10",
+            "menuNm" : "퀵<br>신청하기"
+        },
+        "SVC_ID_0032" : {
+            "class" : "list11",
+            "menuNm" : "공간예약<br>신청하기" // 공간예약 신청하기
+        },
+        "SVC_ID_0033" : {
+            "class" : "list12",
+            "menuNm" : "우산<br>대여하기"
+        },
+        "SVC_ID_0015" : {
+            "class" : "list13",
+            "menuNm" : "세면대가<br>막혔어요"
+        },
+        "SVC_ID_0018" : {
+            "class" : "list23",
+            "menuNm" : "이상한<br>소리가 나요"
+        },
+        "SVC_ID_0019" : {
+            "class" : "list22",
+            "menuNm" : "바닥이<br>불편해요"
+        },
+        "SVC_ID_0031" : {
+            "class" : "list16",
+            "menuNm" : "세탁<br>서비스안내"
+        },
+        "SVC_ID_0030" : {
+            "class" : "list24",
+            "menuNm" : "퀵<br>서비스안내"
+        },
+        "SVC_ID_0029" : {
+            "class" : "list15",
+            "menuNm" : "케이터링<br>신청하기"
+        },
+        "SVC_ID_0035" : {
+            "class" : "list32",
+            "menuNm" : def3HY //물품대여
+        },
+        "SVC_ID_0037" : {
+            "class" : "list17",
+            "menuNm" : "LG<br>방문예약"
+        },
+        "SVC_ID_0038" : {
+            "class" : "list18",
+            "menuNm" : "엣스퍼트<br>통근버스"
+        },
+        "SVC_ID_0039" : {
+            "class" : "list19",
+            "menuNm" : "주차하기"
+        },
+        "SVC_ID_0009" : {
+            "class" : "list57",
+            "menuNm" : "통근버스<br>민원"
+        },
+        "SVC_ID_0060" : {
+            "class" : "list41",
+            "menuNm" : def5HY
+        },
+        "SVC_ID_0061" : {
+            "class" : "list42",
+            "menuNm" : "도레미프레시"
+        },
+        "SVC_ID_0062" : {
+            "class" : "list43",
+            "menuNm" : "우편&택배<br>신청하기"
+        },
+        "SVC_ID_0040" : {
+            "class" : "list20",
+            "menuNm" : "주문하기"
+        },
+        "SVC_ID_0048" : {
+            "class" : "list28",
+            "menuNm" : "엣스퍼트<br>통근민원"
+        },
+        "SVC_ID_0049" : {
+            "class" : "list30",
+            "menuNm" : "에어컨이<br>고장났어요"
+        },
+        "SVC_ID_0050" : {
+            "class" : "list31",      
+            "menuNm" : def2HY
+        },
+        "SVC_ID_0051" : {
+            "class" : "list33",
+            "menuNm" : "의무실상담"
+        },
+        "SVC_ID_0024" : {
+            "class" : "list01 admin",
+            "menuNm" : "불편신고<br>관리"
+        },
+        "SVC_ID_0064" : { 
+            "class" : "list44",
+            "menuNm" : "파인마켓"
+        },
+        "SVC_ID_0065" : { 
+            "class" : "list45",
+            "menuNm" : "공기질<br>어때?"
+        },
+        "SVC_ID_0026" : {
+            "class" : "list02 admin",
+            "menuNm" : "더워요추워요<br>관리"
+        },
+        "SVC_ID_0005" : {
+            "class" : "list03 admin",
+            "menuNm" : "화장실<br>모니터링"
+        },
+        "SVC_ID_0004" : {
+            "class" : "list04 admin",
+            "menuNm" : "공기질<br>모니터링"
+        },
+        "SVC_ID_0034" : {
+            "class" : "list05 admin",
+            "menuNm" : "우산 대여<br>관리"
+        },
+        "SVC_ID_0036" : {
+            "class" : "list11 admin",
+            "menuNm" : "물품 대여<br>관리"
+        },
+        "SVC_ID_0042" : {
+            "class" : "list07 admin",
+            "adminClass" : "adminList07",
+            "menuNm" : "비상대피<br>관리"
+        },
+        "SVC_ID_0010" : {
+            "class" : "list02",
+            "menuNm" : "더워요<br>추워요"
+        },
+        
+        "SVC_ID_0066" : {
+            "class" : "list46",
+            "menuNm" : "전화기<br>도움필요해요"
+        },
+        "SVC_ID_0067" : {
+            "class" : "list47",
+            "menuNm" : "물품유지보수<br>신청하기"
+        },
+        "SVC_ID_0068" : {
+            "class" : "list48",
+            "menuNm" : "임원휴대폰<br>신청하기"
+        },
+        "SVC_ID_0069" : {
+            "class" : "list49",
+            "menuNm" : "키오스크&웰컴보드<br>신청하기"
+        },
+        "SVC_ID_0070" : {
+            "class" : "list50",
+            "menuNm" : "주재원<br>신청안내"
+        },  
+        "SVC_ID_0071" : {
+            "class" : "list51",
+            "menuNm" : "심리상담<br>바로가기"
+        },
+        "SVC_ID_0072" : { 
+            "class" : "list52",
+            "menuNm" : "사무용품<br>신청하기 "
+        },
+        "SVC_ID_0073" : { 
+            "class" : "list53",
+            "menuNm" : "현대제철<br>CJ식당바로가기 "
+        },
+        "SVC_ID_0074" : { 
+            "class" : "list54",
+            "menuNm" : "현대제철<br>모바일좌석 "
+        },
+        "SVC_ID_0075" : { 
+            "class" : "list55",
+            "menuNm" : "식권대장"
+        },
+        "SVC_ID_0076" : { 
+            "class" : "list56",
+            "menuNm" : "현대제철<br>경영지원포탈"
+        },
+        "SVC_ID_0077" : {
+            "class" : "list58",
+            "menuNm" : "간식<br>서비스"
+        },
+        "SVC_ID_0078" : {
+            "class" : "list59",
+            "menuNm" : "방문세차<br>신청하기"
+        },
+         "SVC_ID_0079" : { 
+            "class" : "list60",
+            "menuNm" : "주차신청"
+        },
+        "SVC_ID_0080" : {
+            "class" : "list61",
+            "menuNm" : "해외출장<br>안내"
+        },  
+        "SVC_ID_0081" : { 
+            "class" : "list62",
+            "menuNm" : "현대제철<br>셔틀버스"
+        },
+        "SVC_ID_0082" : {
+            "class" : "list63",
+            "menuNm" : "휴플러스"
+        },
+        "SVC_ID_0083" : {
+            "class" : "list64",
+            "menuNm" : "키오스크&웰컴보드<br>신청"
+        },  
+        "SVC_ADD_MENU" : {
+            "class" : "list21",
+            "menuNm" : "더보기"
+        }
+    }
+
+    const commonPopupOpen = function(id, title, subTitle, confirmCallback, cancelCallback){
+        let obj = $("#"+id);
+
+        subTitle = subTitle.replace(/\n/g, "<br/>");
+
+        obj.find(".pop_contents > p").html(subTitle);
+        obj.find(".btn_group > ul > li > .solid_gray").attr("onclick", (confirmCallback === '' || typeof confirmCallback === 'undefined') ? "commonPopupClose()" : confirmCallback,);
+
+        if("globalCommonPopupType1" === id || "globalCommonPopupType3" === id){
+            obj.find(".pop_contents > h4").html(title);
+        } else if("globalCommonPopupType4" === id || "globalCommonPopupType6" === id ){
+            obj.find(".pop_contents > h4").html(title);
+            obj.find(".btn_group > ul > li > .line_gray").attr("onclick", (cancelCallback === '' || typeof cancelCallback === 'undefined') ? "commonPopupClose()" : cancelCallback);
+        } else if("globalCommonPopupType5" === id){
+            obj.find(".btn_group > ul > li > .line_gray").attr("onclick", (cancelCallback === '' || typeof cancelCallback === 'undefined') ? "commonPopupClose()" : cancelCallback);
+        } else if("globalCommonPopupType7" === id){
+            obj.find(".pop_contents").html(subTitle);
+        } else if("globalCommonPopupType8" === id){
+            obj.find(".pop_contents").html(subTitle);
+            obj.find(".btn_group > ul > li > .solid_gray").html(title);
+            obj.find(".btn_group > ul > li > .solid_gray").attr("onclick", (confirmCallback === '' || typeof confirmCallback === 'undefined') ? "commonPopupClose()" : confirmCallback);
+        } else if("globalCommonPopupType9" === id){
+            obj.find(".btn_group > ul > li > .line_gray").attr("onclick", (cancelCallback === '' || typeof cancelCallback === 'undefined') ? "commonPopupClose()" : cancelCallback);
+        }
+
+        obj.show();
+        $("#globalDimmDiv").show();
+        showHideDim("Y");
+        $("body").css("overflow", "hidden");
+    }
+
+    const commonPopupClose = function(){
+        $("div[id^=globalCommonPopupType]").hide();
+        showHideDim("N");
+        $("#globalDimmDiv").hide();
+        $('body').css("overflow", "visible");
+
+        let obj = $("div[id^=globalCommonPopupType]");
+        $.each(obj, function(index, row){
+            let id = $(row).attr("id");
+
+            $(row).find(".pop_contents > p").html("");
+            $(row).find(".btn_group > ul > li > .solid_gray").removeAttr("onclick");
+
+            if("globalCommonPopupType1" === id || "globalCommonPopupType3" === id){
+                $(row).find(".pop_contents > h4").html("");
+            } else if("globalCommonPopupType4" === id || "globalCommonPopupType6" === id ){
+                $(row).find(".pop_contents > h4").html("");
+                $(row).find(".btn_group > ul > li > .line_gray").removeAttr("onclick");
+            } else if("globalCommonPopupType5" === id){
+                $(row).find(".btn_group > ul > li > .line_gray").removeAttr("onclick");
+            } else if("globalCommonPopupType7" === id){
+                $(row).find(".pop_contents").html("");
+            } else if("globalCommonPopupType8" === id){
+                $(row).find(".pop_contents").html("");
+                $(row).find(".btn_group > ul > li > .solid_gray").html("");
+                $(row).find(".btn_group > ul > li > .solid_gray").removeAttr("onclick");
+            } else if("globalCommonPopupType9" === id){
+                $(row).find(".btn_group > ul > li > .line_gray").removeAttr("onclick");
+            } 
+        });
+    }
+
+	
+</script>
+<!DOCTYPE html>
+<html lang="ko">
+<body >
+<!-- 팝업 : 제목 있음 / 버튼 1개 -->
+<div class="popup" id="globalCommonPopupType1" style="display: none;">
+    <div class="pop_contents">
+        <h4></h4>
+        <p class="small"></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 팝업 : 제목 없음 / 버튼 1개 -->
+<div class="popup" id="globalCommonPopupType2" style="display: none;">
+    <div class="pop_contents">
+        <p></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 팝업 : 아이콘 있음 / 제목 없음 / 버튼 1개 -->
+<div class="popup" id="globalCommonPopupType3" style="display: none;">
+    <div class="pop_contents">
+        <i class="pop_icon alert"></i>
+        <p></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 팝업 : 제목 있음 / 버튼 2개 -->
+<div class="popup" id="globalCommonPopupType4" style="display: none;">
+    <div class="pop_contents">
+        <h4></h4>
+        <p class="small"></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn line_gray">취소</button></li>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 팝업 : 제목 없음 / 버튼 2개 -->
+<div class="popup" id="globalCommonPopupType5" style="display: none;">
+    <div class="pop_contents">
+        <p></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn line_gray">취소</button></li>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 팝업 : 아이콘 있음 / 제목 없음 / 버튼 2개 -->
+<div class="popup" id="globalCommonPopupType6" style="display: none;">
+    <div class="pop_contents">
+        <i class="pop_icon alert"></i>
+        <p></p>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn line_gray">취소</button></li>
+            <li><button type="button" class="btn solid_gray">확인</button></li>
+        </ul>
+    </div>
+</div>
+
+<div class="popup" id="globalCommonPopupType7" style="display: none;">
+    <div class="pop_contents">
+
+    </div>
+</div>
+
+<!-- 팝업 : 아이콘 있음 / 제목 없음 / 버튼 2개 -->
+<div class="popup" id="globalCommonPopupType8" style="display: none;">
+    <div class="pop_contents">
+
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn solid_gray"></button></li>
+        </ul>
+    </div>
+</div>
+
+
+<!-- 팝업 : 아이콘 있음 / 제목 없음 / 버튼 2개 -->
+<div class="popup" id="globalCommonPopupType9" style="display: none;">
+    <div class="pop_contents">
+        <i class="pop_icon alert"></i>
+        <p>
+      
+        </p>
+          비공개 여부<input id="anomin" type ="checkbox" name="anomin"   />
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn line_gray">취소</button></li>
+            <li><button type="button" class="btn solid_gray">저장</button></li>           
+        </ul> 
+    </div>
+</div>
+
+<div class="dimm" id="globalDimmDiv" style="display: none;"></div>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<link href="/resources/assets/css/main.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript">
+    setNativeHeader(null, 'N', null, null, null);
+    let myLGIdbridgeData;
+    let isOpenMyLGIdTranslate = false;
+    
+    $(document).ready(function() {
+        doAjaxCall("/api/members/main", "GET", "", "fnMembersCallBack");
+
+        $(".user_location_toilet").on("click", function(){
+            let toiletGoPageUrl = $("#toiletUrl").val();
+            goPage(toiletGoPageUrl);
+        });
+    });
+
+    function bldgFloorSpaceNotUse(){
+        showWorkspaceSetting();
+    }
+
+    function fnMembersCallBack(result){
+        $localStorage.setItem("MemberInfo", JSON.stringify(result.memberInfo));
+        let mainMemberInfo = result.memberInfo;
+
+        if(mainMemberInfo.bldgUseYn === 'N' || mainMemberInfo.floorUseYn === 'N' || mainMemberInfo.spceUseYn === 'N'){
+            let message = '선택하신 건물이나 층, 공간이 서비스 중지되었습니다.<br>내정보에서 근무위치를 변경하여 주세요.';
+            commonPopupOpen("globalCommonPopupType3", "", message, "bldgFloorSpaceNotUse()", "");
+        }
+
+        if(result.isEmergencyTarget === 'Y'){
+            goPage("/m/view/emergency");
+        }
+
+        myLGIdbridgeData = result.myLGIdJoinBridgeData;
+
+        if(typeof myLGIdbridgeData !== 'undefined' && myLGIdbridgeData != null && isOpenMyLGIdTranslate) {
+            $("#mylgid_join_popup").show();
+            $("#globalDimmDiv").show();
+            showHideDim("Y");
+        }
+
+        let pageAuthList = result.pageAuthList;
+        let memberCardInfo = result.memberCardInfo;
+        let fineTalkInfoList = result.fineTalkInfoList;
+        let bannerInfoList = result.bannerInfoList;
+        let todayMenu = result.todayMenu;
+        let toiletInfo = result.toiletInfo;
+        let locationInfo = mainMemberInfo.wrkplc.split("^^");
+        let locationInfoText = " · " + locationInfo[1];
+
+        let memberNm = mainMemberInfo.memberNm;
+        if(mainMemberInfo.memberNm.length > 6){
+            memberNm = memberNm.substr(0, 6) + '...';
+        }
+
+        $("#memberNmText").text(memberNm);
+        $("#userLocationInfoText > p").text(locationInfo[0]);
+        $("#userLocationInfoText > span").text(locationInfoText);
+
+        let indoorTpText = (typeof mainMemberInfo.indoorTp === 'undefined' || mainMemberInfo.indoorTp == null) ? "-" : mainMemberInfo.indoorTp + "℃";
+        let indoorHdText = (typeof mainMemberInfo.indoorHd === 'undefined' || mainMemberInfo.indoorHd == null) ? "-" : mainMemberInfo.indoorHd + "%";
+        let awaDustText = (typeof mainMemberInfo.awaDustText === 'undefined' || mainMemberInfo.awaDustText == null) ? "-" : mainMemberInfo.awaDustText;
+
+        let outdoorTpText = (typeof mainMemberInfo.outdoorTp === 'undefined' || mainMemberInfo.outdoorTp == null || mainMemberInfo.outdoorTp === '-') ? "-" : mainMemberInfo.outdoorTp + "℃";
+        let outdoorHdText = (typeof mainMemberInfo.outdoorHd === 'undefined' || mainMemberInfo.outdoorHd == null || mainMemberInfo.outdoorTp === '-') ? "-" : mainMemberInfo.outdoorHd + "%";
+        let outdoorDustText = (typeof mainMemberInfo.outdoorDust === 'undefined' || mainMemberInfo.outdoorDust == null) ? "-" : mainMemberInfo.outdoorDust;
+
+        if(indoorTpText === '-' && indoorHdText === '-' && awaDustText === '-'){
+            $("#indoorWeartherDl").remove();
+        } else {
+            $("#indoorTp").text(indoorTpText);
+            $("#indoorHd").text(indoorHdText);
+            $("#awaDust").text(awaDustText);
+        }
+
+        $("#outdoorTp").text(outdoorTpText);
+        $("#outdoorHd").text(outdoorHdText);
+        $("#outdoorDust").text(outdoorDustText);
+
+        if(typeof toiletInfo !== 'undefined' && toiletInfo !== null) {
+            let obj = $("div[class^=user_location_toilet]");
+            $.each(obj, function (index, row) {
+                if ($(row).find(".toiletDiv").text() === mainMemberInfo.toiletStatus) {
+                    $(row).show();
+                }
+            });
+            $("#toiletUrl").val(toiletInfo.linkUrl);
+        }
+
+        $(".user_weather").show();
+
+        let serviceHtml = '';
+        let adminHtml = '';
+        $.each(pageAuthList, function(index, row){
+
+            if(pageAuthList.length > 12 && index === 11){
+                serviceHtml += '<li class="list21"><a href="javascript:goPage(\'/m/view/addMenu\')"><span>더보기</span></a></li>';
+                return false;
+            }
+
+            let rowObj = (typeof menuKeyMap[row.svcId] === 'undefined') ? null : menuKeyMap[row.svcId];
+            if(rowObj != null) {
+                let rowClass = (typeof rowObj["class"] === "undefined") ? "" : rowObj["class"];
+                let rowAdminClass = (typeof rowObj["class"] === "undefined") ? "" : rowObj["adminClass"];
+                let rowMenuNm = (typeof rowObj["menuNm"] === "undefined") ? "" : rowObj["menuNm"];
+
+                //GA 처리해야될 메뉴 서비스 ID
+                if (row.svcId === 'SVC_ID_0037'  || row.svcId === 'SVC_ID_0039'  || row.svcId === 'SVC_ID_0050') {
+                    serviceHtml += '<li class="' + rowClass + '"><a href="javascript:fnGaSendService(\'' + row.linkUrl + '\', \'' + row.svcId + '\')"><span>' + rowMenuNm + '</span></a></li>';
+                } else if(row.svcId === 'SVC_ID_0051'){
+                    let infoData = JSON.parse($localStorage.getItem("MemberInfo"));
+                    serviceHtml += '<li class="' + rowClass + '"><a href="javascript:goPage(\'' + infoData.kakaoUrl + '\')"><span>' + rowMenuNm + '</span></a></li>';
+                } else if(row.svcId === 'SVC_ID_0055' || row.svcId === 'SVC_ID_0056' ){
+                    let infoData = JSON.parse($localStorage.getItem("MemberInfo"));
+                   
+                    serviceHtml += '<li class="' + rowClass + '"><a href="javascript:goPage(\'' + row.linkUrl.replace('params',infoData.moblPhonNo.substr(3)) + '\')"><span>' + rowMenuNm + '</span></a></li>';
+                } else if(row.svcId === 'SVC_ID_0078' ){
+                    let infoData = JSON.parse($localStorage.getItem("MemberInfo"));
+                    serviceHtml += '<li class="' + rowClass + '"><a href="javascript:cleCar(\'' + row.linkUrl +  infoData.memberId + '\')"><span>' + rowMenuNm + '</span></a></li>';
+              
+                } else if(row.svcId === 'SVC_ID_0082' ){
+                    let infoData = JSON.parse($localStorage.getItem("MemberInfo"));
+                    serviceHtml += '<li class="' + rowClass + '"><a href="javascript:huePlus(\'' + row.linkUrl +  infoData.memberId + '\')"><span>' + rowMenuNm + '</span></a></li>';
+    
+                } else if(row.svcId === 'SVC_ID_0062'){
+                    let infoData = JSON.parse($localStorage.getItem("MemberInfo"));
+                    serviceHtml += '<li class="' + rowClass + '"><a href="javascript:pudoCheck(\'' + row.linkUrl.replace('CI',infoData.memberCi) + '\');"><span>' + rowMenuNm + '</span></a></li>';
+                    
+                }  else if(row.svcId === 'SVC_ID_0064'){
+                	
+                    serviceHtml += '<li class="' + rowClass + '"><a href="javascript:lifeCheck(\'' + row.linkUrl + '\');"><span>' + rowMenuNm + '</span></a></li>';
+                    
+                }  else if(row.svcId === 'SVC_ID_0038' || row.svcId === 'SVC_ID_0048'){
+                    let infoData = JSON.parse($localStorage.getItem("MemberInfo"));
+                    let ver = infoData.appVersion
+                    serviceHtml += '<li class="' + rowClass + '"><a href="javascript:companyCheck(\'' + row.linkUrl.replace('compMail',infoData.certEmail) + '\', \'' + ver + '\', \'' + infoData.certEmail + '\', \'' + infoData.comcertYn + '\', \'' + infoData.deviceOS + '\');"><span>' + rowMenuNm + '</span></a></li>';
+                } else {
+                    serviceHtml += '<li class="' + rowClass + '"><a href="javascript:goPage(\'' + row.linkUrl + '\')"><span>' + rowMenuNm + '</span></a></li>';
+                }
+
+            }
+        });
+
+        $(".header_scroll").show();
+        $(".header_sticky").show();
+
+
+        // if(adminHtml !== ''){
+        //     $("#adminServiceListUl").html(adminHtml);
+        //     $("#adminServiceListUl").show();
+        // }
+
+        $("#serviceListUl").html(serviceHtml);
+        // $("#cardRemainingLink")
+
+        if(typeof memberCardInfo !== 'undefined' && memberCardInfo !== null){
+
+            if(memberCardInfo.compApprovReqYn === 'Y'){
+                $("#cardRemainingLink").attr("href", "javascript:remainingAuthCheck();");
+            } else {
+                $("#cardRemainingLink").attr("href", "javascript:searchRemainingCardAmt();");
+            }
+
+            $("#remainingCardAmt").show();
+        } else {
+            $("#remainingCardAmt").remove();
+        }
+
+        if(typeof fineTalkInfoList !== 'undefined' && fineTalkInfoList !== null){
+            let swiperHtml = '<div class="swiper-wrapper" style="height:auto !important;">';
+
+            //let menuImages = ['/resources/assets/images/main/img_finetalk_list01_3.png', '/resources/assets/images/main/img_finetalk_list01.png', '/resources/assets/images/main/img_finetalk_list01_2.png'];
+            //let noticeImages = ['/resources/assets/images/main/img_finetalk_list02_3.png', '/resources/assets/images/main/img_finetalk_list02.png', '/resources/assets/images/main/img_finetalk_list02_2.png'];
+            //let eventImages = ['/resources/assets/images/main/img_finetalk_list03_3.png', '/resources/assets/images/main/img_finetalk_list03.png', '/resources/assets/images/main/img_finetalk_list03_2.png'];
+
+            //let menuCnt = 1;
+            //let noticeCnt = 1;
+            //let eventCnt = 1;
+            $.each(fineTalkInfoList, function(index, row){
+                //let imageSrc = '';
+
+                /*
+                if(row.ftTyCode === 'NL001'){
+                    imageSrc = menuImages[menuCnt%3];
+                    menuCnt++;
+                } else if(row.ftTyCode === 'NL002'){
+                    imageSrc = noticeImages[noticeCnt%3];
+                    noticeCnt++;
+                } else if(row.ftTyCode === 'NL003'){
+                    imageSrc = eventImages[eventCnt%3];
+                    eventCnt++;
+                }
+                */
+
+                let detailUrl = '/m/view/ftDetail?ftNo='+row.ftNo+'&ftTyCode='+row.ftTyCode;
+                swiperHtml += '<div class="swiper-slide" style="height:auto !important;">';
+                swiperHtml += '		<a href="javascript:goPage(\'' + detailUrl + '\');">';
+                swiperHtml += '			<div class="fineInfo">';
+                swiperHtml += '				<div class="fineType"><span>'+ row.ftTyNm +'</span></div>';
+                swiperHtml += '				<div class="fineText">';
+                swiperHtml += '					<div><p>'+ row.title +'</p></div>';
+                swiperHtml += '					<div><p>'+ row.contents +'</p></div>';
+                swiperHtml += '				</div>';
+                swiperHtml += '			</div>';
+                swiperHtml += '		</a>';
+               	swiperHtml += '</div>';
+                
+                /* 
+                swiperHtml += '<div class="swiper-slide" style="height:auto !important;">';
+                swiperHtml += '     <a href="javascript:goPage(\'' + detailUrl + '\');">';
+                swiperHtml += '         <div class="thumb">';
+                swiperHtml += '             <img src="' + imageSrc + '" alt="">';
+                swiperHtml += '             <dl>';
+                swiperHtml += '                 <dt>'+ row.ftTyNm +'</dt>';
+                swiperHtml += '                 <dd>'+ row.title +'</dd>';
+                swiperHtml += '             </dl>';
+                swiperHtml += '         </div>';
+                swiperHtml += '     </a>';
+                swiperHtml += '</div>';
+                */
+            });
+
+            swiperHtml += '</div>';
+            swiperHtml += '<div class="swiper-pagination"></div>';
+
+            $("#swiperContent").html(swiperHtml);
+            //list_swiper();
+        }
+
+        if(typeof bannerInfoList !== 'undefined' && bannerInfoList !== null){
+            let bannerHtml = '';
+            
+            if(typeof bannerInfoList.linkUrl === 'undefined' || bannerInfoList.linkUrl == null || bannerInfoList.linkUrl == '') {
+            	let linkUrl = (typeof bannerInfoList.ftNo === 'undefined' || bannerInfoList.ftNo == null || bannerInfoList.ftNo == '') ? "#" : '/m/view/ftDetail?ftNo=' + bannerInfoList.ftNo + '&ftTyCode=' + bannerInfoList.ftTyCode;
+            	// 파인톡 접근 권한 확인
+            	if(bannerInfoList.ftTyCode == bannerInfoList.svcFtTyCode && bannerInfoList.ftNo == bannerInfoList.svcFtNo) {
+	            	//이미지 등록안하면 노출 안함
+		            if(typeof bannerInfoList.bannerImgSrc !== 'undefined' && bannerInfoList.bannerImgSrc !== null) {
+		                bannerHtml += '<a href="javascript:sendFtBanner(\'' + linkUrl + '\', \''+ bannerInfoList.bannerNm +'\', \'' + bannerInfoList.bannerNo + '\');"><img src="' + bannerInfoList.bannerImgSrc + '" alt="' + bannerInfoList.bannerNm + '"></a>'
+		            }
+            	}
+            } else {
+	            let linkUrl = (typeof bannerInfoList.linkUrl === 'undefined' || bannerInfoList.linkUrl == null || bannerInfoList.linkUrl == '') ? "#" : bannerInfoList.linkUrl;
+	            //이미지 등록안하면 노출 안함
+	            if(typeof bannerInfoList.bannerImgSrc !== 'undefined' && bannerInfoList.bannerImgSrc !== null) {
+	                bannerHtml += '<a href="javascript:sendGABanner(\'' + linkUrl + '\', \''+ bannerInfoList.bannerNm +'\', \'' + bannerInfoList.bannerNo + '\');"><img src="' + bannerInfoList.bannerImgSrc + '" alt="' + bannerInfoList.bannerNm + '"></a>'
+	            }
+            }
+
+            $("#bannerContent").html(bannerHtml);
+        }
+
+        if (typeof todayMenu !== 'undefined' && todayMenu !== null) {
+            let hourMinute = parseInt(todayMenu.currTime);
+            if(hourMinute < 140000 ) {
+                //2021.03.08 오늘의 메뉴는 1개로 변경
+                let detailUrl = '/m/view/ftDetail?ftNo=' + todayMenu.ftNo + '&ftTyCode=' + todayMenu.ftTyCode;
+                //2021.03.02 오늘의 메뉴 상세가 2가지 이상일 가능 성이 있어 파인톡 리스트화면으로 이동
+                // let detailUrl = '/m/view/ftMenu';
+                $("#todayMenu").find("a").attr("href", "javascript:goPage(\'" + detailUrl + " \');")
+                $("#todayMenu").show();
+            } else {
+                $("#todayMenu").remove();
+            }
+        } else {
+            $("#todayMenu").remove();
+        }
+
+        let userSpaceUseYn = result.isUserSpace;
+        if(userSpaceUseYn === 'Y'){
+            $("#userSpaceInfo").attr('onclick', 'fnUserLocation();');
+        }
+        
+        // set swiper
+        let swiper_options = {};
+        
+        if(fineTalkInfoList.length == 1) {
+        	swiper_options = {
+       			spaceBetween: 20,
+    			loop: false,
+    			pagination: {
+       				el: '.swiper-pagination',
+       				type: 'bullets',
+       				clickable : true,
+       			},
+        	}
+        } else {
+        	swiper_options = {
+				spaceBetween: 20,
+       			loop: true,
+       			pagination: {
+       				el: '.swiper-pagination',
+       				type: 'bullets',
+       				clickable : true,
+       			},
+       			autoplay: {
+       				delay: 2000,
+       				disableOnInteraction : false,
+       			},
+           	}
+        }
+        
+     
+       var list_swiper = new Swiper('.finetalk_list .swiper-container', swiper_options);
+        
+        fnMyLGIdPopupOpen2();
+     
+     }
+
+    const list_swiper = function (){
+        new Swiper('.finetalk_list .swiper-container', {
+            spaceBetween: 20,
+            loop:true,
+			pagination: {
+				el: '.swiper-pagination',
+				type: 'bullets',
+				clickable : true,
+			},
+			autoplay: {
+				delay: 2000,
+				disableOnInteraction : false,
+			},
+        });
+    }
+
+    const goBackAction = function(){
+        finishApp();
+    }
+
+    const sendGABanner = function(url, adName, bannerNo){
+        let data = {
+            'event' : 'click_ad_btn',
+            'params' : {
+                'page_title' : '메인',
+                'ad_name' : adName
+            }
+        }
+
+        sendGaLogEvent(data);
+        let param = {
+            'bannerNo' : bannerNo,
+            'linkUrl' : url
+        };
+
+        doAjaxCall('/api-no/common/banner/count', 'POST', param, 'bannerCountUpdateCallback');
+    }
+    //세차 팝업
+    const cleCar = function(url){
+    	
+        let Param = {
+            "linkUrl" : url,
+        }
+        goPage('/m/view/banner2');
+        
+    }
+    
+ const huePlus = function(url){
+    	
+        let Param = {
+            "linkUrl" : url,
+        }
+        goPage('/m/view/banner3');
+        
+    }
+ 
+    function bannerCountUpdateCallback(result){
+        openExternalBrowser(result.linkUrl);
+    }
+
+    const fnGaSendService = function(url, svcId){
+
+        let eventNm = '';
+
+        switch (svcId) {
+            case 'SVC_ID_0037' : eventNm = 'click_lg_visit_booking'; break;
+            case 'SVC_ID_0038' : eventNm = 'click_bus'; break;
+            case 'SVC_ID_0039' : eventNm = 'click_parking'; break;
+            case 'SVC_ID_0048' : eventNm = 'click_bus_help'; break;
+            case 'SVC_ID_0050' : eventNm = 'click_call_ct'; break;
+        }
+
+        let btnNm = menuKeyMap[svcId].menuNm.replace(/<br>/gi, ' ');
+
+        if(typeof eventNm !== 'undefined' && eventNm !== '' ){
+            let data = {
+                'event' : eventNm,
+                'params' : {
+                    'btn_nm' : btnNm,
+                    'page_title' : '메인'
+                }
+            }
+
+            sendGaLogEvent(data);
+        }
+
+        if(svcId === 'SVC_ID_0050'){
+            let infoData = JSON.parse($localStorage.getItem("MemberInfo"));
+            location.href='tel:'+infoData.helpDeskTel;
+        } else {
+            goPage(url);
+        }
+    }
+
+    const remainingAuthCheck = function(){
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+
+        let infoCheckParam = {
+            "bldgId" : lsMemberInfo.bldgId,
+            "compId" : lsMemberInfo.compId,
+            "memberTyCode" : lsMemberInfo.memberTyCode,
+            "servicePath" : "remaining",
+            "originUrl" : ""
+        }
+        doAjaxCall("/api/page/auth/check", "GET", infoCheckParam, "completePageAuthCheckForRemaining");
+    }
+
+    function completePageAuthCheckForRemaining(result){
+        let pageAuthInfo = result;
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+
+        if(pageAuthInfo.compApprovReqYn === 'Y' && lsMemberInfo.comcertYn === 'N'){
+            commonPopupOpen("globalCommonPopupType3", "", "회사인증이 필요한 서비스 입니다.<br/>안내에 따라 회사 인증을 진행해 주세요.", "CompanyAuthGoPageForRemaining()", "");
+        } else {
+            searchRemainingCardAmt();
+        }
+    }
+
+    function CompanyAuthGoPageForRemaining(){
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+        goCompanyAuth(lsMemberInfo.memberId, lsMemberInfo.compId);
+        commonPopupClose();
+    }
+
+
+	function goVerPage(url,ver,email,cert,device) {
+ 		// 서버버전이 높으면 업데이트
+ 	    var a = '2.4.1';		// 서버 버전
+ 	    
+ 		if(compareVersion(a, ver) ){
+ 	    	//alert('ver 가 크거나 같다');
+ 	      //  companyCheck(email,cert,url);
+ 	       goPage(url);
+ 	        // 정상 앱
+ 	    }else{
+ 	    	if(device == 'iOS'){
+ 	    		//
+ 	    		commonPopupOpen('globalCommonPopupType4', '앱 업데이트를 하시겠어요?', '앱을 업데이트 하시면<br/> 통근버스 앱 설치 없이 <br/>간편하게 확인할 수 있습니다.', 'goPage("https://apps.apple.com/kr/app/id1521407322")','noAppupdate(\''+ url+ '\')');
+ 	    		//goPage("https://apps.apple.com/kr/app/id1521407322");
+ 	    	}else if (device == 'Android') {
+ 	    		commonPopupOpen('globalCommonPopupType4', '앱 업데이트를 하시겠어요?', '앱을 업데이트 하시면<br/> 통근버스 앱 설치 없이 <br/>간편하게 확인할 수 있습니다.',  'goPage("market://details?id=com.hi.pineapple")', 'noAppupdate(\''+ url+ '\')');
+ 	    		
+ 	    	}else {
+ 	    		commonPopupOpen('globalCommonPopupType3', '', '지원하지 않는 기기입니다.', '', '');
+
+ 	   		 }
+ 		}
+	}
+	
+	function noAppupdate(url){
+		commonPopupClose();
+		goPage(url);
+		
+	}
+	  
+	function companyCheck(url,ver,email,cert,device){
+		 	
+		
+		  if(cert == 'N'){
+	 	    	commonPopupOpen('globalCommonPopupType5', '', '회사인증이 필요한 서비스 입니다.<br/>안내에 따라 회사 인증을 진행해 주세요.', 'CompanyAuthGoPage()', '');
+	 	    	return 
+	 	  }else if(email == 'iem' ) {
+	 	    	commonPopupOpen('globalCommonPopupType5', '', '회사인증은 되어있으나 이메일 정보가 없습니다.<br/>안내에 따라 회사 인증을 진행해 주세요.', 'CompanyAuthGoPage()', '');
+	 	 	    return  
+	 	  } else {
+	 			 goPage(url);
+	 	  }
+	 	  
+	}
+
+ 	function compareVersion(verA, verB){
+
+ 		var result = true;
+ 		verA = verA.split( '.' ); // .을 기준으로 문자열 배열로 만든다 [6][8]
+ 		verB = verB.split( '.' ); // .을 기준으로 문자열 배열로 만든다 [6][7][99]
+
+ 		const length = Math.max( verA.length, verB.length ); // 배열이 긴쪽의 length를 구함
+ 		
+ 		for ( var i = 0;  i < length ; i ++ ){
+ 			var a = verA[i] ? parseInt(verA[i], 10 ) : 0; // 10진수의 int로 변환할 값이 없을 때 0으로 값을 넣습니다.
+ 			var b = verB[i] ? parseInt(verB[i], 10 ) : 0;
+ 	        // alert( a +' > ' + b + ' : ' + ( a > b ) );
+ 			if ( a > b ) {
+ 				result = false;
+ 				break;
+ 			}
+ 		}
+ 		return result;
+ 	}
+ 	
+    function CompanyAuthGoPage(){
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+        if(isMobile()) {
+            goCompanyAuth(lsMemberInfo.memberId, lsMemberInfo.compId);
+            commonPopupClose();
+            history.back();
+        } else {
+            window.close();
+        }
+    }
+    //lifecare 팝업
+    const lifeCheck = function(url){
+    	
+    	
+    //	goPage('/m/view/banner');
+    	
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+        let Param = {
+            "memberNo" : lsMemberInfo.memberNo,
+            "linkUrl" : url
+        }
+        
+        goPage('/m/view/banner');
+       // goPage('/m/view/banner?memberNo=memberNo&linkUrl=url');
+       // doAjaxCall("/api/common/lifeCare", "POST", Param, "goPageEnc");
+    }
+    function goPageEnc(result){
+        // let pudoNotice =  result.pudoNotice.pudoNotice;
+         
+         let linkUrl =  result.linkUrl;
+       //  let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+ 		 goPage(linkUrl);
+        // commonPopupOpen('globalCommonPopupType2', '타입2', pudoNotice , 'companyGoPageForPudo()', "");
+         //commonPopupOpen("globalCommonPopupType1", "알림", pudoNotice, "companyGoPageForPudo(\'" + linkUrl + " \')", "");
+     }
+     
+    
+    //PUDO 팝업
+    const pudoCheck = function(url){
+    	
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+        let Param = {
+            "bldgId" : lsMemberInfo.bldgId,
+            "linkUrl" : url,
+        }
+        doAjaxCall("/api/common/PudoNotice", "POST", Param, "completePudoCheck");
+    }
+
+
+    function completePudoCheck(result){
+        let pudoNotice =  result.pudoNotice.pudoNotice;
+        
+        let linkUrl =  result.linkUrl;
+        let lsMemberInfo = JSON.parse($localStorage.getItem("MemberInfo"));
+		 
+       // commonPopupOpen('globalCommonPopupType2', '타입2', pudoNotice , 'companyGoPageForPudo()', "");
+        commonPopupOpen("globalCommonPopupType1", "알림", pudoNotice, "companyGoPageForPudo(\'" + linkUrl + " \')", "");
+    }
+    
+    function companyGoPageForPudo(result){
+    	
+    	goPage(result);
+    	 commonPopupClose();
+    }
+
+    
+    function fnUserLocation(){
+        goPage('/m/view/userSpace');
+    }
+
+    function fnBuildingInfoView(){
+        $("#buildingViewToggleDiv").toggle();
+    }
+
+    function fnMyLGIdPopupOpen() {
+        if(typeof myLGIdbridgeData !== 'undefined' && myLGIdbridgeData != null) {
+            $("#mylgid_join_popup").show();
+            $("#globalDimmDiv").show();
+            showHideDim("Y");
+        } else {
+            isOpenMyLGIdTranslate = true;
+        }
+    }
+    
+    function fnMyLGIdPopupOpen2() {
+        
+            $("#mylgid_join_popup").show();
+           $("#globalDimmDiv").show();
+          showHideDim("Y");
+        
+    }
+
+    function fnMyLGIdPopupClose(){
+
+        if($("#chk01").is(":checked")){
+            myLGIdPopupHidden();
+        }
+
+        $("#mylgid_join_popup").hide();
+        $("#globalDimmDiv").hide();
+        showHideDim("N");
+    }
+
+    function fnMyLGIdJoin(){
+        $("#mylgid_join_popup").hide();
+        $("#globalDimmDiv").hide();
+        showHideDim("N");
+        myLGIdSignUp(myLGIdbridgeData);
+    }
+    
+    // 배너 -> 파인톡 바로가기
+    const sendFtBanner = function(url, bannerNm, bannerNo){
+    	let data = {
+			'event' : 'click_ft_btn',
+			'params' : {
+				'page_title' : '메인',
+				'ad_name' : bannerNm
+			}
+		}
+
+		sendGaLogEvent(data);
+   	
+    	let param = {
+            'bannerNo' : bannerNo,
+            'linkUrl' : url
+        };
+
+        doAjaxCall('/api-no/common/banner/count', 'POST', param, 'bannerCountUpdateCallbackForFt');
+    }
+
+    function bannerCountUpdateCallbackForFt(result){
+    	goPage(result.linkUrl);
+    }
+
+</script>
+<body>
+<input type="hidden" id="toiletUrl" value="">
+<div class="main" id="wrap">
+    <div class="header_sticky" style="display: none">
+        <div class="header_inner">
+            <div class="header_top">
+                <div class="user_name">
+                    <strong id="memberNmText"></strong><span>의 공간</span>
+                </div>
+                <div class="header_link">
+                    <ul>
+                        <li id="todayMenu" style="display: none;"><a href="javascript:void(0);">오늘의 메뉴</a></li>
+                        <li id="remainingCardAmt" style="display: none;"><a href="javascript:searchRemainingCardAmt()" id="cardRemainingLink">카드 잔액</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="header_scroll" style="display: none;">
+        <div class="header_inner">
+            <div class="header_middle">
+                <div class="user_location_info" id="userLocationInfoText" onclick="fnBuildingInfoView();">
+                    <p></p><span></span>
+                    <div class="tip_info" id="speechBubble" style="display:none;">
+                        건물정보 확인 및 근무위치를<br>변경하고 싶다면
+                    </div>
+                    <div class="tip_menu" id="buildingViewToggleDiv" style="display:none;">
+                        <ul>
+                            <li><a href="javascript:goPage('/m/view/buildingInfo')">건물정보 확인</a></li>
+                            <li><a href="javascript:showWorkspaceSetting()">근무위치 재설정</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="user_location_toilet" style="display: none;"><span>화장실</span><i class="toilet_status status_01 toiletDiv">여유</i></div>
+                <div class="user_location_toilet" style="display: none;"><span>화장실</span><span class="toilet_status status_02 toiletDiv">혼잡</span></div>
+                <div class="user_location_toilet" style="display: none;"><span>화장실</span><span class="toilet_status status_03 toiletDiv">청소</span></div>
+            </div>
+            <div class="header_bottom" id="userSpaceInfo" onclick="javascript:void(0);">
+                <div class="user_weather" style="display: none;">
+                    <dl class="user_weather_top" id="indoorWeartherDl">
+                        <dt>실내</dt>
+                        <dd class="ico ico_temp"><span class="blind">온도</span></dd>
+                        <dd id="indoorTp"></dd>
+                        <dd class="ico ico_dust"><span class="blind">미세먼지</span></dd>
+                        <dd id="awaDust"></dd>
+                        <dd class="ico ico_hum"><span class="blind">습도</span></dd>
+                        <dd id="indoorHd"></dd>
+                    </dl>
+                    <dl class="user_weather_bottom">
+                        <dt>실외</dt>
+                        <dd class="ico ico_temp"><span class="blind">온도</span></dd>
+                        <dd id="outdoorTp"></dd>
+                        <dd class="ico ico_dust"><span class="blind">미세먼지</span></dd>
+                        <dd id="outdoorDust"></dd>
+                        <dd class="ico ico_hum"><span class="blind">습도</span></dd>
+                        <dd id="outdoorHd"></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+    	<!-- 
+    	<div class="finetalk_guide">
+			<div class="finetalk_icon"><i class="new_dot">N</i></div>
+			<div class="finetalk_text">우리들의 즐거운 오피스라이프 생활 이야기</div>
+			<div class="finetalk_move"></div>
+    	</div>
+    	-->
+    	<div class="finetalk_list">
+            <div class="swiper-container" id="swiperContent">
+            </div>
+        </div>
+        <div class="link_list link_list_pd20">
+
+            <ul id="serviceListUl"></ul>
+        </div>
+        <div class="banner_wrap banner_wrap_pdb25" id="bannerContent"></div>
+    </div>
+</div>
+<script>
+    $(window).scroll(function (){
+        let scroll = $(window).scrollTop();
+        let $el = $('.header_scroll');
+        let el_height = $el.outerHeight();
+        let el_offset = $el.offset().top;
+        let top_scroll = scroll;
+        let el_percentage = el_height;
+        let el_opacity = ((scroll / el_percentage - 1) * -1).toFixed(2);
+        let el_transform = ((scroll / el_percentage) * -25).toFixed(0);
+        $el.find('.header_inner').css({
+            'transform' : 'translateY(' + el_transform + '%)',
+            'opacity' : el_opacity
+        });
+    })
+</script>
+<div class="popup" id="mylgid_join_popup" style="display: none;">
+    <div class="pop_contents">
+        <h4 style="margin-top:20px;">아직 <span class="lg_red">MY LG ID</span> 회원이 아니시군요.</h4>
+        <p class="small"><span class="lg_red">MY LG ID</span> 서비스를 이용하시면<br />동일한 아이디와 비밀번호로<br /><span class="lg_red">LG 계열사</span>의 다양한 서비스를 편리하게<br />로그인 할 수 있습니다.</p>
+        <p class="small txt_666">간편 가입을 위해,<br />하이파인애플 가입 시 등록하신<br />정보 제공 동의가 필요합니다.<br />- 개인정보 항목 : CI, 이름, 생년월일 <br />- 개인정보 보유 및 이용 기간 : 목적 달성 시</p>
+        <div class="btn_close"><button type="button" onclick="fnMyLGIdPopupClose();"><span class="blind">닫기</span></button></div>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn green" onclick="fnMyLGIdJoin();">지금 가입하기</button></li>
+        </ul>
+    </div>
+    <div class="btn_group">
+        <ul>
+            <li><button type="button" class="btn line_gray" onclick="fnMyLGIdPopupClose();">다음에 가입하기</button></li>
+        </ul>
+    </div>
+    <div class="noshow_again">
+        <input type="checkbox" id="chk01"/><label for="chk01">한달간 보지 않기</label>
+    </div>
+</div>
+</body>
+</html>
