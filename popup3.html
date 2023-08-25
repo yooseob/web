@@ -1,0 +1,60 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <style>
+      html,
+      body {
+        position: relative;
+        height: 100%;
+      }
+  
+      body {
+        background: #eee;
+        font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        color: #000;
+        margin: 0;
+        padding: 0;
+      }
+  
+      .swiper {
+        width: 100%;
+        height: 100%;
+      }
+  
+      .swiper-slide {
+        text-align: center;
+        font-size: 18px;
+        background: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+  
+      .swiper-slide img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="popup" id="mylgid_join_popup" style="">
+    <div class="pop_contents">
+      <swiper-container class="mySwiper" pagination="true" pagination-clickable="true" navigation="false" space-between="3" centered-slides="true" autoplay-delay="2500" autoplay-disable-on-interaction="false">
+        
+        <swiper-slide role="group" aria-label="1 / 3" class="swiper-slide-prev" style="width: 260px; margin-right: 3px;"><a href="javascript:goPage('/m/view/ftDetail?ftNo=FI_00000464&amp;ftTypeCode=NL002');"><img src="https://s.pstatic.net/dthumb.phinf/?src=%22http%3A%2F%2Fblogfiles.naver.net%2FMjAyMDAzMjRfMjk4%2FMDAxNTg1MDQzMzgzNDEx.F1WnDTlcrAPAyEV9mwMFF1Lz6nYcw2Jjz5Sd_z-OV_cg.UHmlq75TH02Ew8IDrqxqYs6CwwXHfTTY_4EZBN_svbQg.GIF.chaihyoun%2FGIF5.gif%22&amp;type=nf308_200&amp;service=navermain"></a></swiper-slide>
+        <swiper-slide role="group" aria-label="2 / 3" class="swiper-slide-active" style="width: 260px; margin-right: 3px;"><img src="https://s.pstatic.net/dthumb.phinf/?src=%22http%3A%2F%2Fblogfiles.naver.net%2FMjAyMDAzMjRfMjk4%2FMDAxNTg1MDQzMzgzNDEx.F1WnDTlcrAPAyEV9mwMFF1Lz6nYcw2Jjz5Sd_z-OV_cg.UHmlq75TH02Ew8IDrqxqYs6CwwXHfTTY_4EZBN_svbQg.GIF.chaihyoun%2FGIF5.gif%22&amp;type=nf308_200&amp;service=navermain"></swiper-slide>
+        <swiper-slide role="group" aria-label="3 / 3" style="width: 260px; margin-right: 3px;" class="swiper-slide-next"><img src="https://s.pstatic.net/dthumb.phinf/?src=%22http%3A%2F%2Fblogfiles.naver.net%2FMjAyMDAzMjRfMjk4%2FMDAxNTg1MDQzMzgzNDEx.F1WnDTlcrAPAyEV9mwMFF1Lz6nYcw2Jjz5Sd_z-OV_cg.UHmlq75TH02Ew8IDrqxqYs6CwwXHfTTY_4EZBN_svbQg.GIF.chaihyoun%2FGIF5.gif%22&amp;type=nf308_200&amp;service=navermain"></swiper-slide>
+      </swiper-container>
+    
+        <div class="btn_close"><button type="button" onclick="fnMyLGIdPopupClose();"><span class="blind">닫기</span></button></div>
+    </div>
+    
+    <div class="noshow_again">
+        <input type="checkbox" id="chk01"><label for="chk01">한달간 보지 않기</label>
+    </div>
+</div>
+  </body>
+</html>
