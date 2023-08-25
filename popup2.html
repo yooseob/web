@@ -6,7 +6,7 @@
   <title>Swiper demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
   <!-- Link Swiper's CSS -->
-  <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />-->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 
   <!-- Demo styles -->
   <style>
@@ -52,9 +52,15 @@
   <!-- Swiper -->
   <div class="swiper mySwiper">
     <div class="swiper-wrapper">
-      <div class="swiper-slide"><img src="https://s.pstatic.net/dthumb.phinf/?src=%22http%3A%2F%2Fblogfiles.naver.net%2FMjAyMDAzMjRfMjk4%2FMDAxNTg1MDQzMzgzNDEx.F1WnDTlcrAPAyEV9mwMFF1Lz6nYcw2Jjz5Sd_z-OV_cg.UHmlq75TH02Ew8IDrqxqYs6CwwXHfTTY_4EZBN_svbQg.GIF.chaihyoun%2FGIF5.gif%22&amp;type=nf308_200&amp;service=navermain"></div>
+      <div class="swiper-slide">Slide 1</div>
       <div class="swiper-slide">Slide 2</div>
       <div class="swiper-slide">Slide 3</div>
+      <div class="swiper-slide">Slide 4</div>
+      <div class="swiper-slide">Slide 5</div>
+      <div class="swiper-slide">Slide 6</div>
+      <div class="swiper-slide">Slide 7</div>
+      <div class="swiper-slide">Slide 8</div>
+      <div class="swiper-slide">Slide 9</div>
     </div>
     <div class="swiper-pagination"></div>
   </div>
@@ -67,9 +73,6 @@
     var swiper = new Swiper(".mySwiper", {
       pagination: {
         el: ".swiper-pagination",
-      },autoplay: {
-        delay: 2500,
-        disableOnInteraction: false,
       },
     });
   </script>
