@@ -7,7 +7,7 @@
       //alert( localStorage.getItem('test2') );
 
       // 3일간보지않기 체크
-      if (localStorage.getItem('displayDate')!=null && localStorage.getItem('displayDate')!=undefined){
+      if (localStorage.getItem('displayDate')==null || localStorage.getItem('displayDate')==undefined){
         setNoneDisplayDate();
       }
       
