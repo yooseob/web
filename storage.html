@@ -6,19 +6,40 @@
       //localStorage.setItem('test2', 1);
       //alert( localStorage.getItem('test2') );
 
-      noneDisplayDate();
-      alert( localStorage.getItem('displayDate') );
+      // 3일간보지않기 체크
+      setNoneDisplayDate();
+      alert(localStorage.getItem('displayDate'));
+      openPopup();
 
-
-       function noneDisplayDate(){
+       function setNoneDisplayDate(){
           var displayDate = new Date(); 
           //현재 시간 + 2일
           displayDate.setDate(displayDate.getDate() + 2);
-          //date 객체를 저장할때 밀리세컨드 시간으로 저장.
+          //date 객체를 저장할때 밀리세컨드로 저장
           localStorage.setItem('displayDate', displayDate);
-      
       }
 
+      function openPopup(){
+        //현재 날짜 객체
+        var nowDate = new Date();
+        //로컬스토리지에 저장된 날짜 값
+        var str = localStorage.getItem('displayDate');
+
+        if(str != undefined && str != null {
+
+          //밀리세컨->날짜 객체로 변환
+          var compareDate = new Date(str);
+          if(compareDate.getTime() >= nowDate.getTime()){
+            alert('open');
+          }else{
+            alert('아직 3일 안지남'+ compareDate.getTime() + '/' + nowDate.getTime());
+          }
+          
+        }
+  
+
+        
+      }
       
     </script>
   </head>
