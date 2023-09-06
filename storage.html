@@ -28,7 +28,7 @@
         //로컬스토리지에 저장된 날짜 값
         var str = localStorage.getItem('displayDate');
 
-        if(str != undefined && str != null) {
+        if(str !== 'undefined' && str !== null) {
 
           //밀리세컨->날짜 객체로 변환
           var compareDate = new Date(str);
