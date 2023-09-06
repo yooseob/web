@@ -1,10 +1,25 @@
 <html>
   <head>
     <script>
-      sessionStorage.setItem('today', 'close');  
-      alert( sessionStorage.getItem('today') );
-      localStorage.setItem('test2', 1);
-      alert( localStorage.getItem('test2') );
+      //sessionStorage.setItem('today', 'close');  
+      //alert( sessionStorage.getItem('today') );
+      //localStorage.setItem('test2', 1);
+      //alert( localStorage.getItem('test2') );
+
+      displayNoneMov();
+      alert( localStorage.getItem('displayDate') );
+
+
+       function displayNoneMov(){
+          var displayDate = new Date(); 
+          //현재 시간 + 2일
+          displayDate.setDate(displayDate.getDate() + 2);
+          //date 객체를 저장할때 밀리세컨드 시간으로 저장.
+          localStorage.setItem('displayDate', displayDate);
+      
+      }
+
+      
     </script>
   </head>
   <body>
