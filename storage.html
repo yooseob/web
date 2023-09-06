@@ -29,7 +29,7 @@
 
           //밀리세컨->날짜 객체로 변환
           var compareDate = new Date(str);
-          if(compareDate.getTime() >= nowDate.getTime()){
+          if(compareDate.getTime() <= nowDate.getTime()){
             alert('open');
           }else{
             alert('아직 3일 안지남'+ compareDate.getTime() + '/' + nowDate.getTime());
