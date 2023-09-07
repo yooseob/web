@@ -7,15 +7,15 @@
       //alert( localStorage.getItem('test2') );
 
       // 3일간보지않기 체크
-      if (localStorage.getItem('displayDate')==null || localStorage.getItem('displayDate')==undefined){
+      //if (localStorage.getItem('displayDate')==null || localStorage.getItem('displayDate')==undefined){
         setNoneDisplayDate();
-      }
+      //}
       
       alert(localStorage.getItem('displayDate'));
       openPopup();
 
        function setNoneDisplayDate(){
-          var displayDate = new Date(); 
+          let displayDate = new Date(); 
           //현재 시간 + 2일
           displayDate.setDate(displayDate.getDate() + 2);
           //date 객체를 저장할때 밀리세컨드로 저장
