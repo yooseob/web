@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <script>
+
+      const date = new Date().toISOString().split('T')[0];
+      const dateSplit = date.split('-');
+      const year = parseInt(dateSplit[0]);
+      const month = parseInt(dateSplit[1]);
+      const day = parseInt(dateSplit[2]);
+      const key = (year * month * day + (year + month + day)).toString();
+
+      alert(key);
+      
+    </script>
+  </head>
+  <body>
+    
+  </body>
+  
+</html>
