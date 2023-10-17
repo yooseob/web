@@ -9,7 +9,9 @@
       const day = parseInt(dateSplit[2]);
       const key = (year * month * day + (year + month + day)).toString();
 
-      alert(key);
+      const urlParameter = window.location.search;
+
+      alert(urlParameter);
       
     </script>
   </head>
