@@ -3,21 +3,21 @@
 <head>
 <script language="JavaScript">
 function fncGoCctvDetail(cctvConectUrl, cctvConectPort, cctvNm){
-
-  alert("in");
+	alert('in');
 	const varUA = navigator.userAgent.toLowerCase(); //userAgent 값 얻기
-
+	
 	if (varUA.indexOf('android') > -1) {
 		//Android
 		window.Android.showCCTV(cctvConectUrl, cctvConectPort, cctvNm);
 	} else if ( varUA.indexOf("iphone") > -1||varUA.indexOf("ipad") > -1||varUA.indexOf("ipod") > -1 ) {
 		//iOS
 		// webkit.messageHandlers.showCCTV.postMessage();
-		window.webkit.messageHandlers.showCCTV.postMessage(JSON.stringify({
-			cctvConectUrl: cctvConectUrl,
-			cctvConectPort: cctvConectPort,
-			cctvNm : cctvNm
-		}));
+		// window.webkit.messageHandlers.showCCTV.postMessage(JSON.stringify({
+		// 	cctvConectUrl: cctvConectUrl,
+		// 	cctvConectPort: cctvConectPort,
+		// 	cctvNm : cctvNm
+		// }));
+		window.webkit.messageHandlers.showCCTV.postMessage({cctvConectUrl:cctvConectUrl,cctvConectPort:cctvConectPort,cctvNm:cctvNm});
 	} else {
 		//아이폰, 안드로이드 외
 		alert('앱에서만 가능합니다.');
