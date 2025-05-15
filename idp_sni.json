@@ -1,0 +1,93 @@
+{
+    "header":
+    {
+        "rsltCd": "00",
+        "rsltMsg": "Success"
+    },
+    "body":
+    {
+        "entrLogList":
+        [
+            {
+                "logSeqno": 647589496,
+                "secuGradeNm": "제한II",
+                "bildgNm": "안산R&D캠퍼스",
+                "bildgFlor": "B1F",
+                "loctNm": "B1_통합관제센터(방재실)",
+                "inOutDv": "OUT",
+                "userComNm": "(주)에스앤아이 코퍼레이션",
+                "userEmpno": "AD010119",
+                "userNm": "이유섭",
+                "deptNm": "",
+                "userTypeNm": "협력업체",
+                "logOrgnDtm": "2025-05-15 00:00:57",
+                "sussYn": "성공(사용자별 권한)",
+                "cardId": 1007927687,
+                "equipNm": "B1_통합관제센터(방재실)_OUT",
+                "equipId": "722284",
+                "deptId": "",
+                "userMobno": "01035557965"
+            },
+            {
+                "logSeqno": 647609853,
+                "secuGradeNm": "제한I",
+                "bildgNm": "안산R&D캠퍼스",
+                "bildgFlor": "7F",
+                "loctNm": "7F_동관 피트니스",
+                "inOutDv": "IN",
+                "userComNm": "LG 이노텍",
+                "userEmpno": "89845",
+                "userNm": "차윤서",
+                "deptNm": "광학기술개발팀",
+                "userTypeNm": "정직원",
+                "logOrgnDtm": "2025-05-15 06:49:51",
+                "sussYn": "성공(카드권한)",
+                "cardId": 1007912552,
+                "equipNm": "7F 동관 피트니스_IN",
+                "equipId": "722428",
+                "deptId": "46208",
+                "userMobno": "01067747746"
+            },
+            {
+                "logSeqno": 647608921,
+                "secuGradeNm": "주출입구",
+                "bildgNm": "안산R&D캠퍼스",
+                "bildgFlor": "1F",
+                "loctNm": "1F_주출입구_IN#1(IDP)",
+                "inOutDv": "IN",
+                "userComNm": "LG 이노텍",
+                "userEmpno": "42942",
+                "userNm": "홍다미",
+                "deptNm": "외주생산관리Part",
+                "userTypeNm": "정직원",
+                "logOrgnDtm": "2025-05-15 06:44:23",
+                "sussYn": "성공(카드권한)",
+                "cardId": 1007910383,
+                "equipNm": "1F_주출입구_IN#1(IDP)",
+                "equipId": "721837",
+                "deptId": "46847",
+                "userMobno": "01087529493"
+            },
+            {
+                "logSeqno": 647620864,
+                "secuGradeNm": "주출입구",
+                "bildgNm": "안산R&D캠퍼스",
+                "bildgFlor": "1F",
+                "loctNm": "1F_주출입구_IN#3(IDP)",
+                "inOutDv": "IN",
+                "userComNm": "LG 이노텍",
+                "userEmpno": "103787",
+                "userNm": "한강희",
+                "deptNm": "안산안전환경팀",
+                "userTypeNm": "정직원",
+                "logOrgnDtm": "2025-05-15 07:57:57",
+                "sussYn": "성공(카드권한)",
+                "cardId": 1007916751,
+                "equipNm": "1F_주출입구_IN#3(IDP)",
+                "equipId": "721839",
+                "deptId": "46360",
+                "userMobno": "01024698929"
+            }
+        ]
+    }
+}
