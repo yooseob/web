@@ -2,7 +2,7 @@
    "RESP_DATA":{
       "_tran_res_data":{
          "google_hint_version":"1.0.0",
-         "c_minimum_ver":"1.1.0",
+         "c_minimum_ver":"1.0.0",
          "google_api_key":"AIzaSyDL1CLyGCcDuq5DZeSMXMJuFID-4HYqeiw",
          "c_notice_act":{
             "c_act_url":"https://www.hipineapple.co.kr",
@@ -14,7 +14,7 @@
          "c_session_time":"600",
          "c_available_service":true,
          "c_available_act":"안녕하세요.\n앱을 이용해주시는 여러분께 감사드리며, 더 나은 서비스를 제공하기 위해 시스템 점검을 진행하고 있습니다.",
-         "c_program_ver":"1.0.0",
+         "c_program_ver":"1.1.0",
          "c_site_url":"https://www.hipineapple.co.kr",
          "c_register_pass":false,
          "c_notice_yn":true,
