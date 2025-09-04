@@ -2,7 +2,7 @@
    "RESP_DATA":{
       "_tran_res_data":{
          "google_hint_version":"1.0.0",
-         "c_minimum_ver":"1.0.0",
+         "c_minimum_ver":"1.1.0",
          "google_api_key":"AIzaSyDL1CLyGCcDuq5DZeSMXMJuFID-4HYqeiw",
          "c_notice_act":{
             "c_act_url":"https://www.hipineapple.co.kr",
