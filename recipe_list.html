@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <script>
+      // 현재 URL의 쿼리 문자열 가져오기
+      const queryString = window.location.search;
+      console.log(queryString); // 예: "?name=John&age=30"
+      
+      // URLSearchParams API를 사용하여 파라미터 파싱
+      const urlParams = new URLSearchParams(queryString);
+      
+      // 특정 파라미터 값 가져오기
+      const page = urlParams.get('page');
+      const age = urlParams.get('age');
+      
+      alert(page);
+      
+
+
+    </script>
+  </head>
+  <body>
+    
+  </body>
+</html>
