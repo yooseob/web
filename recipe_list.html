@@ -1,24 +1,55 @@
-<html>
-  <head>
-    <script>
-      // 현재 URL의 쿼리 문자열 가져오기
-      const queryString = window.location.search;
-      console.log(queryString); // 예: "?name=John&age=30"
-      
-      // URLSearchParams API를 사용하여 파라미터 파싱
-      const urlParams = new URLSearchParams(queryString);
-      
-      // 특정 파라미터 값 가져오기
-      const page = urlParams.get('page');
-      const age = urlParams.get('age');
-      
-      alert(page);
-      
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Pagination</title>
+</head>
+<body>
+  <pre id="json-output">로딩 중...</pre>
 
+  <script>
+    const apiUrl = 'https://yooseob.github.io/web/recipe_list.json';
 
-    </script>
-  </head>
-  <body>
-    
-  </body>
+    function getPageFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      const page = parseInt(params.get('page'), 10);
+      return isNaN(page) || page < 1 ? 1 : page;
+    }
+
+    async function fetchRecipes() {
+      try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        return data.recipes;
+      } catch (err) {
+        console.error('데이터 가져오기 실패:', err);
+        return [];
+      }
+    }
+
+    function paginateRecipes(recipes, page, perPage = 10) {
+      const total = recipes.length;
+      const totalPages = Math.ceil(total / perPage);
+      const start = (page - 1) * perPage;
+      const end = start + perPage;
+
+      return {
+        page,
+        perPage,
+        totalRecipes: total,
+        totalPages,
+        recipes: recipes.slice(start, end)
+      };
+    }
+
+    (async function init() {
+      const allRecipes = await fetchRecipes();
+      const currentPage = getPageFromQuery();
+      const paginated = paginateRecipes(allRecipes, currentPage);
+
+      const output = document.getElementById('json-output');
+      output.textContent = JSON.stringify(paginated, null, 2); // JSON 형식 출력
+    })();
+  </script>
+</body>
 </html>
